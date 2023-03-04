@@ -1,3 +1,6 @@
 [toolchain]
+# Switch over to the previous day's nightly to make the program compile again.
+# vvvvvvvvvvvvvvvvvvvvvvvvvvvv
+# channel = "nightly-2023-02-08"
 channel = "nightly-2023-02-09"
 profile = "minimal"
