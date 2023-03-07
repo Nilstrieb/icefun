@@ -149,32 +149,6 @@ impl<'a, T> Drop for OptGuard<'a, T> {
         loop {}
     }
 }
-cfg_server! {
-    impl < S, B > Server < S, B > where S : HttpService < B >, { pub (crate) fn
-    new(service : S) -> Server < S, B > { Server { in_flight : Box::pin(None), service, }
-    } pub (crate) fn into_service(self) -> S { self.service } } impl < S : HttpService <
-    B >, B > Unpin for Server < S, B > {} impl < S, Bs > Dispatch for Server < S, Body >
-    where S : HttpService < Body, ResBody = Bs >, S::Error : Into < Box < dyn StdError +
-    Send + Sync >>, Bs : HttpBody, { type PollItem = MessageHead < http::StatusCode >;
-    type PollBody = Bs; type PollError = S::Error; type RecvItem = RequestHead; fn
-    poll_msg(mut self : Pin <& mut Self >, cx : & mut task::Context <'_ >,) -> Poll <
-    Option < Result < (Self::PollItem, Self::PollBody), Self::PollError >>> { let mut
-    this = self.as_mut(); let ret = if let Some(ref mut fut) = this.in_flight.as_mut()
-    .as_pin_mut() { let resp = ready!(fut.as_mut().poll(cx) ?); let (parts, body) = resp
-    .into_parts(); let head = MessageHead { version : parts.version, subject : parts
-    .status, headers : parts.headers, extensions : parts.extensions, };
-    Poll::Ready(Some(Ok((head, body)))) } else {
-    unreachable!("poll_msg shouldn't be called if no inflight"); }; this.in_flight
-    .set(None); ret } fn recv_msg(& mut self, msg : crate ::Result < (Self::RecvItem,
-    Body) >) -> crate ::Result < () > { let (msg, body) = msg ?; let mut req =
-    Request::new(body); * req.method_mut() = msg.subject.0; * req.uri_mut() = msg.subject
-    .1; * req.headers_mut() = msg.headers; * req.version_mut() = msg.version; * req
-    .extensions_mut() = msg.extensions; let fut = self.service.call(req); self.in_flight
-    .set(Some(fut)); Ok(()) } fn poll_ready(& mut self, cx : & mut task::Context <'_ >)
-    -> Poll < Result < (), () >> { if self.in_flight.is_some() { Poll::Pending } else {
-    self.service.poll_ready(cx).map_err(| _e | { trace!("service closed"); }) } } fn
-    should_poll(& self) -> bool { self.in_flight.is_some() } }
-}
 cfg_client! {
     impl < B > Client < B > { pub (crate) fn new(rx : ClientRx < B >) -> Client < B > {
     Client { callback : None, rx, rx_closed : false, } } } impl < B > Dispatch for Client

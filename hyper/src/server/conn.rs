@@ -42,17 +42,15 @@
 //! }
 //! # }
 //! ```
-#[cfg(
-    all(
-        any(feature = "http1", feature = "http2"),
-        not(all(feature = "http1", feature = "http2"))
-    )
-)]
+#[cfg(feature = "http2")]
+use crate::common::io::Rewind;
+#[cfg(all(
+    any(feature = "http1", feature = "http2"),
+    not(all(feature = "http1", feature = "http2"))
+))]
 use std::marker::PhantomData;
 #[cfg(all(any(feature = "http1", feature = "http2"), feature = "runtime"))]
 use std::time::Duration;
-#[cfg(feature = "http2")]
-use crate::common::io::Rewind;
 cfg_feature! {
     #![any(feature = "http1", feature = "http2")] use std::error::Error as StdError; use
     std::fmt; use bytes::Bytes; use pin_project_lite::pin_project; use tokio::io:: {
@@ -66,11 +64,6 @@ cfg_feature! {
 #[cfg(feature = "tcp")]
 pub use super::tcp::{AddrIncoming, AddrStream};
 
-
-
-
-
-
 #[derive(Clone, Debug)]
 #[cfg(any(feature = "http1", feature = "http2"))]
 #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
@@ -81,32 +74,24 @@ pub(crate) struct Http<E = Exec> {
 #[cfg(any(feature = "http1", feature = "http2"))]
 #[derive(Clone, Debug, PartialEq)]
 enum ConnectionMode {
-    
     #[cfg(feature = "http1")]
     H1Only,
-    
+
     #[cfg(feature = "http2")]
     H2Only,
-    
+
     #[cfg(all(feature = "http1", feature = "http2"))]
     Fallback,
 }
 #[cfg(any(feature = "http1", feature = "http2"))]
 pin_project! {
-    #[doc = " A future binding a connection with a Service."] #[doc = ""] #[doc =
-    " Polling this future will drive HTTP forward."] #[must_use =
-    "futures do nothing unless polled"] #[cfg_attr(docsrs, doc(cfg(any(feature = "http1",
-    feature = "http2"))))] pub struct Connection < T, S, E = Exec > where S : HttpService
-    < Body >, { pub (super) conn : Option < ProtoServer < T, S::ResBody, S, E >>,
+
+     pub struct Connection < T, S, E = Exec > { pub (super) conn : Option < ProtoServer < T, S, S, E >>,
     fallback : Fallback < E >, }
 }
 #[cfg(feature = "http1")]
-type Http1Dispatcher<T, B, S> = proto::h1::Dispatcher<
-    proto::h1::dispatch::Server<S, Body>,
-    B,
-    T,
-    proto::ServerTransaction,
->;
+type Http1Dispatcher<T, B, S> =
+    proto::h1::Dispatcher<proto::h1::dispatch::Server<S, Body>, B, T, proto::ServerTransaction>;
 #[cfg(all(not(feature = "http1"), feature = "http2"))]
 type Http1Dispatcher<T, B, S> = (Never, PhantomData<(T, Box<Pin<B>>, Box<Pin<S>>)>);
 #[cfg(feature = "http2")]
@@ -118,9 +103,11 @@ type Http2Server<T, B, S, E> = (
 );
 #[cfg(any(feature = "http1", feature = "http2"))]
 pin_project! {
-    #[project = ProtoServerProj] pub (super) enum ProtoServer < T, B, S, E = Exec > where
-    S : HttpService < Body >, B : HttpBody, { H1 { #[pin] h1 : Http1Dispatcher < T, B, S
-    >, }, H2 { #[pin] h2 : Http2Server < T, B, S, E >, }, }
+    #[project = ProtoServerProj] pub (super) enum ProtoServer < T, B, S, E = Exec > {
+
+         H1 { #[pin] h1 : (T, B, S), }, H2 { #[pin] h2 : (T, B, S ,E), },
+
+}
 }
 #[cfg(all(feature = "http1", feature = "http2"))]
 #[derive(Clone, Debug)]
@@ -128,12 +115,10 @@ enum Fallback<E> {
     ToHttp2(proto::h2::server::Config, E),
     Http1Only,
 }
-#[cfg(
-    all(
-        any(feature = "http1", feature = "http2"),
-        not(all(feature = "http1", feature = "http2"))
-    )
-)]
+#[cfg(all(
+    any(feature = "http1", feature = "http2"),
+    not(all(feature = "http1", feature = "http2"))
+))]
 type Fallback<E> = PhantomData<E>;
 #[cfg(any(feature = "http1", feature = "http2"))]
 impl Http {}
@@ -157,8 +142,7 @@ mod upgrades {
     use super::*;
     #[must_use = "futures do nothing unless polled"]
     #[allow(missing_debug_implementations)]
-    pub struct UpgradeableConnection<T, S, E>
-    {
+    pub struct UpgradeableConnection<T, S, E> {
         pub(super) inner: (T, S, E),
     }
     impl<I, B, S, E> UpgradeableConnection<I, S, E>
@@ -169,7 +153,8 @@ mod upgrades {
         B: HttpBody + 'static,
         B::Error: Into<Box<dyn StdError + Send + Sync>>,
         E: ConnStreamExec<S::Future, B>,
-    {}
+    {
+    }
     impl<I, B, S, E> Future for UpgradeableConnection<I, S, E>
     where
         S: HttpService<Body, ResBody = B>,
@@ -180,10 +165,7 @@ mod upgrades {
         E: ConnStreamExec<S::Future, B>,
     {
         type Output = crate::Result<()>;
-        fn poll(
-            mut self: Pin<&mut Self>,
-            cx: &mut task::Context<'_>,
-        ) -> Poll<Self::Output> {
+        fn poll(mut self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<Self::Output> {
             loop {}
         }
     }
