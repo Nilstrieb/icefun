@@ -16,42 +16,42 @@ struct ErrorImpl {
 pub(super) enum Kind {
     Parse(Parse),
     User(User),
-    
+
     #[allow(unused)]
     IncompleteMessage,
-    
+
     #[cfg(feature = "http1")]
     UnexpectedMessage,
-    
+
     Canceled,
-    
+
     ChannelClosed,
-    
+
     #[cfg(any(feature = "http1", feature = "http2"))]
     Io,
-    
+
     #[allow(unused)]
     Connect,
-    
+
     #[cfg(all(feature = "tcp", feature = "server"))]
     Listen,
-    
+
     #[cfg(any(feature = "http1", feature = "http2"))]
     #[cfg(feature = "server")]
     Accept,
-    
+
     #[cfg(all(feature = "http1", feature = "server", feature = "runtime"))]
     HeaderTimeout,
-    
+
     #[cfg(any(feature = "http1", feature = "http2", feature = "stream"))]
     Body,
-    
+
     #[cfg(any(feature = "http1", feature = "http2"))]
     BodyWrite,
-    
+
     #[cfg(feature = "http1")]
     Shutdown,
-    
+
     #[cfg(feature = "http2")]
     Http2,
 }
@@ -82,100 +82,95 @@ pub(super) enum Header {
 }
 #[derive(Debug)]
 pub(super) enum User {
-    
     #[cfg(any(feature = "http1", feature = "http2"))]
     Body,
-    
+
     BodyWriteAborted,
-    
+
     #[cfg(any(feature = "http1", feature = "http2"))]
     #[cfg(feature = "server")]
     MakeService,
-    
+
     #[cfg(any(feature = "http1", feature = "http2"))]
     Service,
-    
-    
-    
+
     #[cfg(any(feature = "http1", feature = "http2"))]
     #[cfg(feature = "server")]
     UnexpectedHeader,
-    
+
     #[cfg(any(feature = "http1", feature = "http2"))]
     #[cfg(feature = "client")]
     UnsupportedVersion,
-    
+
     #[cfg(any(feature = "http1", feature = "http2"))]
     #[cfg(feature = "client")]
     UnsupportedRequestMethod,
-    
+
     #[cfg(feature = "http1")]
     #[cfg(feature = "server")]
     UnsupportedStatusCode,
-    
+
     #[cfg(any(feature = "http1", feature = "http2"))]
     #[cfg(feature = "client")]
     AbsoluteUriRequired,
-    
+
     NoUpgrade,
-    
+
     #[cfg(feature = "http1")]
     ManualUpgrade,
-    
+
     #[cfg(feature = "server")]
     WithoutShutdownNonHttp1,
-    
+
     #[cfg(feature = "client")]
     DispatchGone,
-    
+
     #[cfg(feature = "ffi")]
     AbortedByCallback,
 }
 #[derive(Debug)]
 pub(super) struct TimedOut;
 impl Error {
-    
     pub(crate) fn is_parse(&self) -> bool {
         loop {}
     }
-    
+
     pub(crate) fn is_parse_too_large(&self) -> bool {
         loop {}
     }
-    
-    
+
     pub(crate) fn is_parse_status(&self) -> bool {
         loop {}
     }
-    
+
     pub(crate) fn is_user(&self) -> bool {
         loop {}
     }
-    
+
     pub(crate) fn is_canceled(&self) -> bool {
         loop {}
     }
-    
+
     pub(crate) fn is_closed(&self) -> bool {
         loop {}
     }
-    
+
     pub(crate) fn is_connect(&self) -> bool {
         loop {}
     }
-    
+
     pub(crate) fn is_incomplete_message(&self) -> bool {
         loop {}
     }
-    
+
     pub(crate) fn is_body_write_aborted(&self) -> bool {
         loop {}
     }
-    
+
     pub(crate) fn is_timeout(&self) -> bool {
         loop {}
     }
-    
+
     pub(crate) fn into_cause(self) -> Option<Box<dyn StdError + Send + Sync>> {
         loop {}
     }
@@ -319,7 +314,7 @@ impl Error {
     pub(super) fn new_h2(cause: ::h2::Error) -> Error {
         loop {}
     }
-    
+
     pub(crate) fn message(&self) -> impl fmt::Display + '_ {
         self.description()
     }

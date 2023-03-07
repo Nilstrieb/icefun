@@ -13,21 +13,16 @@ use std::fmt;
 mod h1_reason_phrase;
 
 #[cfg(feature = "http2")]
-
-
-
-
 #[derive(Clone, Eq, PartialEq)]
 pub(crate) struct Protocol {
     inner: h2::ext::Protocol,
 }
 #[cfg(feature = "http2")]
 impl Protocol {
-    
     pub(crate) const fn from_static(value: &'static str) -> Self {
         loop {}
     }
-    
+
     pub(crate) fn as_str(&self) -> &str {
         loop {}
     }
@@ -58,44 +53,18 @@ impl fmt::Debug for Protocol {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #[derive(Clone, Debug)]
 pub(crate) struct HeaderCaseMap(HeaderMap<Bytes>);
 #[cfg(feature = "http1")]
 impl HeaderCaseMap {
-    
-    
     pub(crate) fn get_all<'a>(
         &'a self,
         name: &HeaderName,
     ) -> impl Iterator<Item = impl AsRef<[u8]> + 'a> + 'a {
         self.get_all_internal(name).into_iter()
     }
-    
-    
-    pub(crate) fn get_all_internal<'a>(
-        &'a self,
-        name: &HeaderName,
-    ) -> ValueIter<'_, Bytes> {
+
+    pub(crate) fn get_all_internal<'a>(&'a self, name: &HeaderName) -> ValueIter<'_, Bytes> {
         loop {}
     }
     pub(crate) fn default() -> Self {
@@ -116,14 +85,8 @@ impl HeaderCaseMap {
 #[derive(Clone, Debug)]
 
 pub(crate) struct OriginalHeaderOrder {
-    
-    
     num_entries: HashMap<HeaderName, usize>,
-    
-    
-    
-    
-    
+
     entry_order: Vec<(HeaderName, usize)>,
 }
 #[cfg(all(feature = "http1", feature = "ffi"))]
@@ -140,43 +103,7 @@ impl OriginalHeaderOrder {
     {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     pub(crate) fn get_in_order(&self) -> impl Iterator<Item = &(HeaderName, usize)> {
         loop {}
     }

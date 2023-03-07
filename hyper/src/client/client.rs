@@ -3,22 +3,22 @@ use std::fmt;
 
 use std::time::Duration;
 
-use futures_util::future::{self, Either, FutureExt as _, TryFutureExt as _};
+use futures_util::future::{Either};
 
 use super::conn;
-use super::connect::{self, sealed::Connect, Alpn, Connected, Connection};
-use super::pool::{self, Key as PoolKey, Pool, Poolable, Pooled, Reservation};
+use super::connect::{sealed::Connect, Connected};
+use super::pool::{self, Key as PoolKey, Pool, Poolable, Reservation};
 #[cfg(feature = "tcp")]
 use super::HttpConnector;
 use crate::body::{Body, HttpBody};
 use crate::common::{
-    exec::BoxSendFuture, lazy as hyper_lazy, sync_wrapper::SyncWrapper, task, Future, Lazy, Pin,
+    exec::BoxSendFuture, sync_wrapper::SyncWrapper, task, Future, Pin,
     Poll,
 };
 use crate::rt::Executor;
 use http::uri::{Port, Scheme};
 use http::{Request, Response, Uri, Version};
-use tracing::{debug, trace};
+
 
 #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
 pub struct Client<C, B = Body> {

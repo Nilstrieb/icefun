@@ -1,26 +1,9 @@
-use std::error::Error as StdError;
-use std::fmt;
-use std::marker::PhantomData;
 use crate::body::HttpBody;
 use crate::common::{task, Future, Poll};
 use crate::{Request, Response};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+use std::error::Error as StdError;
+use std::fmt;
+use std::marker::PhantomData;
 
 pub fn service_fn<F, R, S>(f: F) -> ServiceFn<F, R>
 where
@@ -35,7 +18,7 @@ pub struct ServiceFn<F, R> {
     _req: PhantomData<fn(R)>,
 }
 impl<F, ReqBody, Ret, ResBody, E> tower_service::Service<crate::Request<ReqBody>>
-for ServiceFn<F, ReqBody>
+    for ServiceFn<F, ReqBody>
 where
     F: FnMut(Request<ReqBody>) -> Ret,
     ReqBody: HttpBody,
@@ -46,10 +29,7 @@ where
     type Response = crate::Response<ResBody>;
     type Error = E;
     type Future = Ret;
-    fn poll_ready(
-        &mut self,
-        _cx: &mut task::Context<'_>,
-    ) -> Poll<Result<(), Self::Error>> {
+    fn poll_ready(&mut self, _cx: &mut task::Context<'_>) -> Poll<Result<(), Self::Error>> {
         loop {}
     }
     fn call(&mut self, req: Request<ReqBody>) -> Self::Future {
@@ -69,7 +49,4 @@ where
         loop {}
     }
 }
-impl<F, R> Copy for ServiceFn<F, R>
-where
-    F: Copy,
-{}
+impl<F, R> Copy for ServiceFn<F, R> where F: Copy {}

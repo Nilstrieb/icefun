@@ -1,5 +1,4 @@
-#[cfg(all(feature = "server", any(feature = "http1", feature = "http2")))]
-use crate::body::Body;
+
 #[cfg(feature = "server")]
 use crate::body::HttpBody;
 #[cfg(all(feature = "http2", feature = "server"))]

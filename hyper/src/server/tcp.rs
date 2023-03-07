@@ -1,14 +1,14 @@
 use std::fmt;
 use std::io;
-use std::net::{SocketAddr, TcpListener as StdTcpListener};
+use std::net::SocketAddr;
 use std::time::Duration;
-use socket2::TcpKeepalive;
-use tokio::net::TcpListener;
-use tokio::time::Sleep;
-use crate::common::{task, Pin, Poll};
+
 #[allow(unreachable_pub)]
 pub use self::addr_stream::AddrStream;
 use super::accept::Accept;
+use crate::common::{task, Pin, Poll};
+use tokio::net::TcpListener;
+use tokio::time::Sleep;
 #[derive(Default, Debug, Clone, Copy)]
 struct TcpKeepaliveConfig {
     time: Option<Duration>,
@@ -16,62 +16,46 @@ struct TcpKeepaliveConfig {
     retries: Option<u32>,
 }
 impl TcpKeepaliveConfig {
-    #[cfg(
-        not(
-            any(
-                target_os = "android",
-                target_os = "dragonfly",
-                target_os = "freebsd",
-                target_os = "fuchsia",
-                target_os = "illumos",
-                target_os = "linux",
-                target_os = "netbsd",
-                target_vendor = "apple",
-                windows,
-            )
-        )
-    )]
+    #[cfg(not(any(
+        target_os = "android",
+        target_os = "dragonfly",
+        target_os = "freebsd",
+        target_os = "fuchsia",
+        target_os = "illumos",
+        target_os = "linux",
+        target_os = "netbsd",
+        target_vendor = "apple",
+        windows,
+    )))]
     fn ka_with_interval(ka: TcpKeepalive, _: Duration, _: &mut bool) -> TcpKeepalive {
         loop {}
     }
-    #[cfg(
-        not(
-            any(
-                target_os = "android",
-                target_os = "dragonfly",
-                target_os = "freebsd",
-                target_os = "fuchsia",
-                target_os = "illumos",
-                target_os = "linux",
-                target_os = "netbsd",
-                target_vendor = "apple",
-            )
-        )
-    )]
+    #[cfg(not(any(
+        target_os = "android",
+        target_os = "dragonfly",
+        target_os = "freebsd",
+        target_os = "fuchsia",
+        target_os = "illumos",
+        target_os = "linux",
+        target_os = "netbsd",
+        target_vendor = "apple",
+    )))]
     fn ka_with_retries(ka: TcpKeepalive, _: u32, _: &mut bool) -> TcpKeepalive {
         loop {}
     }
 }
 
 #[must_use = "streams do nothing unless polled"]
-pub struct AddrIncoming {
-    addr: SocketAddr,
-    listener: TcpListener,
-    sleep_on_errors: bool,
-    tcp_keepalive_config: TcpKeepaliveConfig,
-    tcp_nodelay: bool,
-    timeout: Option<Pin<Box<Sleep>>>,
-}
+pub struct AddrIncoming {}
 impl AddrIncoming {
-    
     pub fn bind(addr: &SocketAddr) -> crate::Result<Self> {
         loop {}
     }
-    
+
     pub fn local_addr(&self) -> SocketAddr {
         loop {}
     }
-    
+
     pub fn set_nodelay(&mut self, enabled: bool) -> &mut Self {
         loop {}
     }
@@ -92,13 +76,13 @@ impl fmt::Debug for AddrIncoming {
     }
 }
 mod addr_stream {
+    use crate::common::{task, Pin, Poll};
     use std::io;
     use std::net::SocketAddr;
     #[cfg(unix)]
     use std::os::unix::io::{AsRawFd, RawFd};
     use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
     use tokio::net::TcpStream;
-    use crate::common::{task, Pin, Poll};
     pin_project_lite::pin_project! {
         #[doc = " A transport returned yieled by `AddrIncoming`."] #[derive(Debug)] pub
         struct AddrStream { #[pin] inner : TcpStream, pub (super) remote_addr :
@@ -133,17 +117,11 @@ mod addr_stream {
             loop {}
         }
         #[inline]
-        fn poll_flush(
-            self: Pin<&mut Self>,
-            _cx: &mut task::Context<'_>,
-        ) -> Poll<io::Result<()>> {
+        fn poll_flush(self: Pin<&mut Self>, _cx: &mut task::Context<'_>) -> Poll<io::Result<()>> {
             loop {}
         }
         #[inline]
-        fn poll_shutdown(
-            self: Pin<&mut Self>,
-            cx: &mut task::Context<'_>,
-        ) -> Poll<io::Result<()>> {
+        fn poll_shutdown(self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<io::Result<()>> {
             loop {}
         }
         #[inline]
