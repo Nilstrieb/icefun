@@ -61,11 +61,11 @@ where
         }
     }
 }
-#[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
+
 impl<I, E> Builder<I, E> {
     #[doc(hidden)]
     #[cfg(feature = "http1")]
-    pub fn http1_pipeline_flush(mut self, val: bool) -> Self {
+    pub fn http1_pipeline_flush(self, val: bool) -> Self {
         loop {}
     }
 
@@ -94,36 +94,25 @@ where
     }
 }
 pub(crate) mod new_svc {
-    use super::{Connecting, Watcher};
+    use super::Watcher;
     use crate::body::{Body, HttpBody};
     use crate::common::exec::ConnStreamExec;
     use crate::common::{task, Future, Pin, Poll, Unpin};
     use crate::service::HttpService;
-    use pin_project_lite::pin_project;
     use std::error::Error as StdError;
     use tokio::io::{AsyncRead, AsyncWrite};
-    pin_project! {
-        #[allow(missing_debug_implementations)]
 
-        pub struct NewSvcTask < I, N, S, E, W : Watcher < I, S, E >> {
-
-            #[pin]
-            state : State <I, S, E, W >,
-
-            a: (N)
-
-     }
+    pub struct NewSvcTask<I, N, S, E, W: Watcher<I, S, E>> {
+        state: State<I, S, E, W>,
+        a: N,
     }
-    pin_project! {
-        #[project = StateProj]
 
-        pub (super) enum State <I, S, E, W : Watcher < I, S, E >> {
+    pub(super) enum State<I, S, E, W: Watcher<I, S, E>> {
+        Connecting { a: (I, S, W, E) },
 
-            Connecting { a: (I, S, W, E), },
-
-            Connected { #[pin] future : W::Future, },
-        }
+        Connected { future: W::Future },
     }
+
     impl<I, N, S: HttpService<Body>, E, W: Watcher<I, S, E>> NewSvcTask<I, N, S, E, W> {
         pub(super) fn new(watcher: W) -> Self {
             loop {}
