@@ -147,37 +147,8 @@ enum Fallback<E> {
     )
 )]
 type Fallback<E> = PhantomData<E>;
-/// Deconstructed parts of a `Connection`.
-///
-/// This allows taking apart a `Connection` at a later time, in order to
-/// reclaim the IO object, and additional related pieces.
-#[derive(Debug)]
 #[cfg(any(feature = "http1", feature = "http2"))]
-#[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
-pub(crate) struct Parts<T, S> {
-    /// The original IO object used in the handshake.
-    pub(crate) io: T,
-    /// A buffer of bytes that have been read but not processed as HTTP.
-    ///
-    /// If the client sent additional bytes after its last request, and
-    /// this connection "ended" with an upgrade, the read buffer will contain
-    /// those bytes.
-    ///
-    /// You will want to check for any existing bytes if you plan to continue
-    /// communicating on the IO object.
-    pub(crate) read_buf: Bytes,
-    /// The `Service` used to serve this connection.
-    pub(crate) service: S,
-    _inner: (),
-}
-#[cfg(any(feature = "http1", feature = "http2"))]
-impl Http {
-    /// Creates a new instance of the HTTP protocol, ready to spawn a server or
-    /// start accepting connections.
-    pub(crate) fn new() -> Http {
-        loop {}
-    }
-}
+impl Http {}
 #[cfg(any(feature = "http1", feature = "http2"))]
 impl Default for ConnectionMode {
     #[cfg(all(feature = "http1", feature = "http2"))]
@@ -212,15 +183,7 @@ mod upgrades {
         B: HttpBody + 'static,
         B::Error: Into<Box<dyn StdError + Send + Sync>>,
         E: ConnStreamExec<S::Future, B>,
-    {
-        /// Start a graceful shutdown process for this connection.
-        ///
-        /// This `Connection` should continue to be polled until shutdown
-        /// can finish.
-        pub(crate) fn graceful_shutdown(mut self: Pin<&mut Self>) {
-            loop {}
-        }
-    }
+    {}
     impl<I, B, S, E> Future for UpgradeableConnection<I, S, E>
     where
         S: HttpService<Body, ResBody = B>,

@@ -25,46 +25,6 @@ pub trait Accept {
         cx: &mut task::Context<'_>,
     ) -> Poll<Option<Result<Self::Conn, Self::Error>>>;
 }
-/// Create an `Accept` with a polling function.
-///
-/// # Example
-///
-/// ```
-/// use std::task::Poll;
-/// use hyper::server::{accept, Server};
-///
-/// # let mock_conn = ();
-/// // If we created some mocked connection...
-/// let mut conn = Some(mock_conn);
-///
-/// // And accept just the mocked conn once...
-/// let once = accept::poll_fn(move |cx| {
-///     Poll::Ready(conn.take().map(Ok::<_, ()>))
-/// });
-///
-/// let builder = Server::builder(once);
-/// ```
-pub(crate) fn poll_fn<F, IO, E>(func: F) -> impl Accept<Conn = IO, Error = E>
-where
-    F: FnMut(&mut task::Context<'_>) -> Poll<Option<Result<IO, E>>>,
-{
-    struct PollFn<F>(F);
-    impl<F> Unpin for PollFn<F> {}
-    impl<F, IO, E> Accept for PollFn<F>
-    where
-        F: FnMut(&mut task::Context<'_>) -> Poll<Option<Result<IO, E>>>,
-    {
-        type Conn = IO;
-        type Error = E;
-        fn poll_accept(
-            self: Pin<&mut Self>,
-            cx: &mut task::Context<'_>,
-        ) -> Poll<Option<Result<Self::Conn, Self::Error>>> {
-            (self.get_mut().0)(cx)
-        }
-    }
-    PollFn(func)
-}
 /// Adapt a `Stream` of incoming connections into an `Accept`.
 ///
 /// # Optional

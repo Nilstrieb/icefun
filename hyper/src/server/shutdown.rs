@@ -1,7 +1,6 @@
 use std::error::Error as StdError;
 use pin_project_lite::pin_project;
 use tokio::io::{AsyncRead, AsyncWrite};
-
 use super::accept::Accept;
 use super::conn::UpgradeableConnection;
 use super::server::{Server, Watcher};
@@ -19,11 +18,7 @@ pin_project! {
     Option < (Signal, Watch) >, #[pin] server : Server < I, S, E >, #[pin] signal : F, },
     Draining { draining : Draining }, }
 }
-impl<I, S, F, E> Graceful<I, S, F, E> {
-    pub(super) fn new(server: Server<I, S, E>, signal: F) -> Self {
-        loop {}
-    }
-}
+impl<I, S, F, E> Graceful<I, S, F, E> {}
 impl<I, IO, IE, S, B, F, E> Future for Graceful<I, S, F, E>
 where
     I: Accept<Conn = IO, Error = IE>,
@@ -60,15 +55,4 @@ where
     fn watch(&self, conn: UpgradeableConnection<I, S, E>) -> Self::Future {
         loop {}
     }
-}
-fn on_drain<I, S, E>(conn: Pin<&mut UpgradeableConnection<I, S, E>>)
-where
-    S: HttpService<Body>,
-    S::Error: Into<Box<dyn StdError + Send + Sync>>,
-    I: AsyncRead + AsyncWrite + Unpin,
-    S::ResBody: HttpBody + 'static,
-    <S::ResBody as HttpBody>::Error: Into<Box<dyn StdError + Send + Sync>>,
-    E: ConnStreamExec<S::Future, S::ResBody>,
-{
-    loop {}
 }

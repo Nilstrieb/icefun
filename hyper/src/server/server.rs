@@ -1,9 +1,6 @@
 use std::error::Error as StdError;
-use std::fmt;
 #[cfg(feature = "tcp")]
 use std::net::{SocketAddr, TcpListener as StdTcpListener};
-#[cfg(feature = "tcp")]
-use std::time::Duration;
 use pin_project_lite::pin_project;
 use tokio::io::{AsyncRead, AsyncWrite};
 use super::accept::Accept;
@@ -13,7 +10,7 @@ use crate::body::{Body, HttpBody};
 use crate::common::exec::Exec;
 use crate::common::exec::{ConnStreamExec, NewSvcExec};
 use crate::common::{task, Future, Pin, Poll, Unpin};
-use super::conn::{Connection, Http as Http_, UpgradeableConnection};
+use super::conn::{Http as Http_, UpgradeableConnection};
 use super::shutdown::{Graceful, GracefulWatcher};
 use crate::service::{HttpService, MakeServiceRef};
 use self::new_svc::NewSvcTask;
@@ -54,16 +51,6 @@ impl Server<AddrIncoming, ()> {
     /// This method will panic if binding to the address fails. For a method
     /// to bind to an address and return a `Result`, see `Server::try_bind`.
     pub fn bind(addr: &SocketAddr) -> Builder<AddrIncoming> {
-        loop {}
-    }
-    /// Tries to bind to the provided address, and returns a [`Builder`](Builder).
-    pub(crate) fn try_bind(addr: &SocketAddr) -> crate::Result<Builder<AddrIncoming>> {
-        loop {}
-    }
-    /// Create a new instance from a `std::net::TcpListener` instance.
-    pub(crate) fn from_tcp(
-        listener: StdTcpListener,
-    ) -> Result<Builder<AddrIncoming>, crate::Error> {
         loop {}
     }
 }
@@ -128,17 +115,6 @@ where
     ) -> Poll<Option<crate::Result<Connecting<IO, S::Future, E>>>> {
         loop {}
     }
-    pub(super) fn poll_watch<W>(
-        mut self: Pin<&mut Self>,
-        cx: &mut task::Context<'_>,
-        watcher: &W,
-    ) -> Poll<crate::Result<()>>
-    where
-        E: NewSvcExec<IO, S::Future, S::Service, E, W>,
-        W: Watcher<IO, S::Service, E>,
-    {
-        loop {}
-    }
 }
 #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
 impl<I, IO, IE, S, B, E> Future for Server<I, S, E>
@@ -167,89 +143,9 @@ where
 }
 #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
 impl<I, E> Builder<I, E> {
-    /// Start a new builder, wrapping an incoming stream and low-level options.
-    ///
-    /// For a more convenient constructor, see [`Server::bind`](Server::bind).
-    pub(crate) fn new(incoming: I, protocol: Http_<E>) -> Self {
-        loop {}
-    }
-    /// Sets whether to use keep-alive for HTTP/1 connections.
-    ///
-    /// Default is `true`.
-    #[cfg(feature = "http1")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "http1")))]
-    pub(crate) fn http1_keepalive(mut self, val: bool) -> Self {
-        loop {}
-    }
-    /// Set whether HTTP/1 connections should support half-closures.
-    ///
-    /// Clients can chose to shutdown their write-side while waiting
-    /// for the server to respond. Setting this to `true` will
-    /// prevent closing the connection immediately if `read`
-    /// detects an EOF in the middle of a request.
-    ///
-    /// Default is `false`.
-    #[cfg(feature = "http1")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "http1")))]
-    pub(crate) fn http1_half_close(mut self, val: bool) -> Self {
-        loop {}
-    }
-    /// Set the maximum buffer size.
-    ///
-    /// Default is ~ 400kb.
-    #[cfg(feature = "http1")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "http1")))]
-    pub(crate) fn http1_max_buf_size(mut self, val: usize) -> Self {
-        loop {}
-    }
     #[doc(hidden)]
     #[cfg(feature = "http1")]
     pub fn http1_pipeline_flush(mut self, val: bool) -> Self {
-        loop {}
-    }
-    /// Set whether HTTP/1 connections should try to use vectored writes,
-    /// or always flatten into a single buffer.
-    ///
-    /// Note that setting this to false may mean more copies of body data,
-    /// but may also improve performance when an IO transport doesn't
-    /// support vectored writes well, such as most TLS implementations.
-    ///
-    /// Setting this to true will force hyper to use queued strategy
-    /// which may eliminate unnecessary cloning on some TLS backends
-    ///
-    /// Default is `auto`. In this mode hyper will try to guess which
-    /// mode to use
-    #[cfg(feature = "http1")]
-    pub(crate) fn http1_writev(mut self, enabled: bool) -> Self {
-        loop {}
-    }
-    /// Set whether HTTP/1 connections will write header names as title case at
-    /// the socket level.
-    ///
-    /// Note that this setting does not affect HTTP/2.
-    ///
-    /// Default is false.
-    #[cfg(feature = "http1")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "http1")))]
-    pub(crate) fn http1_title_case_headers(mut self, val: bool) -> Self {
-        loop {}
-    }
-    /// Set whether to support preserving original header cases.
-    ///
-    /// Currently, this will record the original cases received, and store them
-    /// in a private extension on the `Request`. It will also look for and use
-    /// such an extension in any provided `Response`.
-    ///
-    /// Since the relevant extension is still private, there is no way to
-    /// interact with the original cases. The only effect this can have now is
-    /// to forward the cases in a proxy-like fashion.
-    ///
-    /// Note that this setting does not affect HTTP/2.
-    ///
-    /// Default is false.
-    #[cfg(feature = "http1")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "http1")))]
-    pub(crate) fn http1_preserve_header_case(mut self, val: bool) -> Self {
         loop {}
     }
     /// Set a timeout for reading client request headers. If a client does not
@@ -259,118 +155,6 @@ impl<I, E> Builder<I, E> {
     #[cfg(all(feature = "http1", feature = "runtime"))]
     #[cfg_attr(docsrs, doc(cfg(all(feature = "http1", feature = "runtime"))))]
     pub(crate) fn http1_header_read_timeout(mut self, read_timeout: Duration) -> Self {
-        loop {}
-    }
-    /// Sets whether HTTP/1 is required.
-    ///
-    /// Default is `false`.
-    #[cfg(feature = "http1")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "http1")))]
-    pub(crate) fn http1_only(mut self, val: bool) -> Self {
-        loop {}
-    }
-    /// Sets whether HTTP/2 is required.
-    ///
-    /// Default is `false`.
-    #[cfg(feature = "http2")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
-    pub(crate) fn http2_only(mut self, val: bool) -> Self {
-        loop {}
-    }
-    /// Sets the [`SETTINGS_INITIAL_WINDOW_SIZE`][spec] option for HTTP2
-    /// stream-level flow control.
-    ///
-    /// Passing `None` will do nothing.
-    ///
-    /// If not set, hyper will use a default.
-    ///
-    /// [spec]: https://http2.github.io/http2-spec/#SETTINGS_INITIAL_WINDOW_SIZE
-    #[cfg(feature = "http2")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
-    pub(crate) fn http2_initial_stream_window_size(
-        mut self,
-        sz: impl Into<Option<u32>>,
-    ) -> Self {
-        loop {}
-    }
-    /// Sets the max connection-level flow control for HTTP2
-    ///
-    /// Passing `None` will do nothing.
-    ///
-    /// If not set, hyper will use a default.
-    #[cfg(feature = "http2")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
-    pub(crate) fn http2_initial_connection_window_size(
-        mut self,
-        sz: impl Into<Option<u32>>,
-    ) -> Self {
-        loop {}
-    }
-    /// Sets whether to use an adaptive flow control.
-    ///
-    /// Enabling this will override the limits set in
-    /// `http2_initial_stream_window_size` and
-    /// `http2_initial_connection_window_size`.
-    #[cfg(feature = "http2")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
-    pub(crate) fn http2_adaptive_window(mut self, enabled: bool) -> Self {
-        loop {}
-    }
-    /// Sets the maximum frame size to use for HTTP2.
-    ///
-    /// Passing `None` will do nothing.
-    ///
-    /// If not set, hyper will use a default.
-    #[cfg(feature = "http2")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
-    pub(crate) fn http2_max_frame_size(mut self, sz: impl Into<Option<u32>>) -> Self {
-        loop {}
-    }
-    /// Sets the max size of received header frames.
-    ///
-    /// Default is currently ~16MB, but may change.
-    #[cfg(feature = "http2")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
-    pub(crate) fn http2_max_header_list_size(mut self, max: u32) -> Self {
-        loop {}
-    }
-    /// Sets the [`SETTINGS_MAX_CONCURRENT_STREAMS`][spec] option for HTTP2
-    /// connections.
-    ///
-    /// Default is no limit (`std::u32::MAX`). Passing `None` will do nothing.
-    ///
-    /// [spec]: https://http2.github.io/http2-spec/#SETTINGS_MAX_CONCURRENT_STREAMS
-    #[cfg(feature = "http2")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
-    pub(crate) fn http2_max_concurrent_streams(
-        mut self,
-        max: impl Into<Option<u32>>,
-    ) -> Self {
-        loop {}
-    }
-    /// Set the maximum write buffer size for each HTTP/2 stream.
-    ///
-    /// Default is currently ~400KB, but may change.
-    ///
-    /// # Panics
-    ///
-    /// The value must be no larger than `u32::MAX`.
-    #[cfg(feature = "http2")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
-    pub(crate) fn http2_max_send_buf_size(mut self, max: usize) -> Self {
-        loop {}
-    }
-    /// Enables the [extended CONNECT protocol].
-    ///
-    /// [extended CONNECT protocol]: https://datatracker.ietf.org/doc/html/rfc8441#section-4
-    #[cfg(feature = "http2")]
-    pub(crate) fn http2_enable_connect_protocol(mut self) -> Self {
-        loop {}
-    }
-    /// Sets the `Executor` to deal with connection tasks.
-    ///
-    /// Default is `tokio::spawn`.
-    pub(crate) fn executor<E2>(self, executor: E2) -> Builder<I, E2> {
         loop {}
     }
     ///

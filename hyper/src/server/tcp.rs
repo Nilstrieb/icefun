@@ -16,30 +16,6 @@ struct TcpKeepaliveConfig {
     retries: Option<u32>,
 }
 impl TcpKeepaliveConfig {
-    /// Converts into a `socket2::TcpKeealive` if there is any keep alive configuration.
-    fn into_socket2(self) -> Option<TcpKeepalive> {
-        loop {}
-    }
-    #[cfg(
-        any(
-            target_os = "android",
-            target_os = "dragonfly",
-            target_os = "freebsd",
-            target_os = "fuchsia",
-            target_os = "illumos",
-            target_os = "linux",
-            target_os = "netbsd",
-            target_vendor = "apple",
-            windows,
-        )
-    )]
-    fn ka_with_interval(
-        ka: TcpKeepalive,
-        interval: Duration,
-        dirty: &mut bool,
-    ) -> TcpKeepalive {
-        loop {}
-    }
     #[cfg(
         not(
             any(
@@ -56,25 +32,6 @@ impl TcpKeepaliveConfig {
         )
     )]
     fn ka_with_interval(ka: TcpKeepalive, _: Duration, _: &mut bool) -> TcpKeepalive {
-        loop {}
-    }
-    #[cfg(
-        any(
-            target_os = "android",
-            target_os = "dragonfly",
-            target_os = "freebsd",
-            target_os = "fuchsia",
-            target_os = "illumos",
-            target_os = "linux",
-            target_os = "netbsd",
-            target_vendor = "apple",
-        )
-    )]
-    fn ka_with_retries(
-        ka: TcpKeepalive,
-        retries: u32,
-        dirty: &mut bool,
-    ) -> TcpKeepalive {
         loop {}
     }
     #[cfg(
@@ -106,65 +63,16 @@ pub struct AddrIncoming {
     timeout: Option<Pin<Box<Sleep>>>,
 }
 impl AddrIncoming {
-    pub(super) fn new(addr: &SocketAddr) -> crate::Result<Self> {
-        loop {}
-    }
-    pub(super) fn from_std(std_listener: StdTcpListener) -> crate::Result<Self> {
-        loop {}
-    }
     /// Creates a new `AddrIncoming` binding to provided socket address.
     pub fn bind(addr: &SocketAddr) -> crate::Result<Self> {
-        loop {}
-    }
-    /// Creates a new `AddrIncoming` from an existing `tokio::net::TcpListener`.
-    pub fn from_listener(listener: TcpListener) -> crate::Result<Self> {
         loop {}
     }
     /// Get the local address bound to this listener.
     pub fn local_addr(&self) -> SocketAddr {
         loop {}
     }
-    /// Set the duration to remain idle before sending TCP keepalive probes.
-    ///
-    /// If `None` is specified, keepalive is disabled.
-    pub fn set_keepalive(&mut self, time: Option<Duration>) -> &mut Self {
-        loop {}
-    }
-    /// Set the duration between two successive TCP keepalive retransmissions,
-    /// if acknowledgement to the previous keepalive transmission is not received.
-    pub fn set_keepalive_interval(&mut self, interval: Option<Duration>) -> &mut Self {
-        loop {}
-    }
-    /// Set the number of retransmissions to be carried out before declaring that remote end is not available.
-    pub fn set_keepalive_retries(&mut self, retries: Option<u32>) -> &mut Self {
-        loop {}
-    }
     /// Set the value of `TCP_NODELAY` option for accepted connections.
     pub fn set_nodelay(&mut self, enabled: bool) -> &mut Self {
-        loop {}
-    }
-    /// Set whether to sleep on accept errors.
-    ///
-    /// A possible scenario is that the process has hit the max open files
-    /// allowed, and so trying to accept a new connection will fail with
-    /// `EMFILE`. In some cases, it's preferable to just wait for some time, if
-    /// the application will likely close some files (or connections), and try
-    /// to accept the connection again. If this option is `true`, the error
-    /// will be logged at the `error` level, since it is still a big deal,
-    /// and then the listener will sleep for 1 second.
-    ///
-    /// In other cases, hitting the max open files should be treat similarly
-    /// to being out-of-memory, and simply error (and shutdown). Setting
-    /// this option to `false` will allow that.
-    ///
-    /// Default is `true`.
-    pub fn set_sleep_on_errors(&mut self, val: bool) {
-        loop {}
-    }
-    fn poll_next_(
-        &mut self,
-        cx: &mut task::Context<'_>,
-    ) -> Poll<io::Result<AddrStream>> {
         loop {}
     }
 }
@@ -177,16 +85,6 @@ impl Accept for AddrIncoming {
     ) -> Poll<Option<Result<Self::Conn, Self::Error>>> {
         loop {}
     }
-}
-/// This function defines errors that are per-connection. Which basically
-/// means that if we get this error from `accept()` system call it means
-/// next connection might be ready to be accepted.
-///
-/// All other errors will incur a timeout before next `accept()` is performed.
-/// The timeout is useful to handle resource exhaustion errors like ENFILE
-/// and EMFILE. Otherwise, could enter into tight loop.
-fn is_connection_error(e: &io::Error) -> bool {
-    loop {}
 }
 impl fmt::Debug for AddrIncoming {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -206,40 +104,7 @@ mod addr_stream {
         struct AddrStream { #[pin] inner : TcpStream, pub (super) remote_addr :
         SocketAddr, pub (super) local_addr : SocketAddr }
     }
-    impl AddrStream {
-        pub(super) fn new(
-            tcp: TcpStream,
-            remote_addr: SocketAddr,
-            local_addr: SocketAddr,
-        ) -> AddrStream {
-            loop {}
-        }
-        /// Returns the remote (peer) address of this connection.
-        #[inline]
-        pub fn remote_addr(&self) -> SocketAddr {
-            loop {}
-        }
-        /// Returns the local address of this connection.
-        #[inline]
-        pub fn local_addr(&self) -> SocketAddr {
-            loop {}
-        }
-        /// Consumes the AddrStream and returns the underlying IO object
-        #[inline]
-        pub fn into_inner(self) -> TcpStream {
-            loop {}
-        }
-        /// Attempt to receive data on the socket, without removing that data
-        /// from the queue, registering the current task for wakeup if data is
-        /// not yet available.
-        pub fn poll_peek(
-            &mut self,
-            cx: &mut task::Context<'_>,
-            buf: &mut tokio::io::ReadBuf<'_>,
-        ) -> Poll<io::Result<usize>> {
-            loop {}
-        }
-    }
+    impl AddrStream {}
     impl AsyncRead for AddrStream {
         #[inline]
         fn poll_read(
