@@ -6,13 +6,11 @@ use bytes::Bytes;
 use futures_channel::mpsc;
 use futures_channel::oneshot;
 use futures_core::Stream;
-
 use http::HeaderMap;
 use http_body::{Body as HttpBody, SizeHint};
 use super::DecodedLength;
 #[cfg(feature = "stream")]
 use crate::common::sync_wrapper::SyncWrapper;
-
 #[cfg(all(feature = "client", any(feature = "http1", feature = "http2")))]
 use crate::common::Never;
 use crate::common::{task, watch, Pin, Poll};
@@ -120,19 +118,6 @@ impl Body {
     pub fn empty() -> Body {
         loop {}
     }
-    /// Create a `Body` stream with an associated sender half.
-    ///
-    /// Useful when wanting to stream chunks from another thread.
-    #[inline]
-    pub(crate) fn channel() -> (Sender, Body) {
-        loop {}
-    }
-    pub(crate) fn new_channel(
-        content_length: DecodedLength,
-        wanter: bool,
-    ) -> (Sender, Body) {
-        loop {}
-    }
     /// Wrap a futures `Stream` in a box inside `Body`.
     ///
     /// # Example
@@ -164,47 +149,8 @@ impl Body {
     {
         loop {}
     }
-    fn new(kind: Kind) -> Body {
-        loop {}
-    }
-    #[cfg(all(feature = "http2", any(feature = "client", feature = "server")))]
-    pub(crate) fn h2(
-        recv: h2::RecvStream,
-        mut content_length: DecodedLength,
-        ping: ping::Recorder,
-    ) -> Self {
-        loop {}
-    }
-    #[cfg(any(feature = "http1", feature = "http2"))]
-    #[cfg(feature = "client")]
-    pub(crate) fn delayed_eof(&mut self, fut: DelayEofUntil) {
-        loop {}
-    }
-    fn take_delayed_eof(&mut self) -> Option<DelayEof> {
-        loop {}
-    }
-    #[cfg(any(feature = "http1", feature = "http2"))]
-    fn extra_mut(&mut self) -> &mut Extra {
-        loop {}
-    }
-    fn poll_eof(
-        &mut self,
-        cx: &mut task::Context<'_>,
-    ) -> Poll<Option<crate::Result<Bytes>>> {
-        loop {}
-    }
     #[cfg(feature = "ffi")]
     pub(crate) fn as_ffi_mut(&mut self) -> &mut crate::ffi::UserBody {
-        loop {}
-    }
-    fn poll_inner(
-        &mut self,
-        cx: &mut task::Context<'_>,
-    ) -> Poll<Option<crate::Result<Bytes>>> {
-        loop {}
-    }
-    #[cfg(feature = "http1")]
-    pub(super) fn take_full_data(&mut self) -> Option<Bytes> {
         loop {}
     }
 }
@@ -316,55 +262,7 @@ impl From<Cow<'static, str>> for Body {
         loop {}
     }
 }
-impl Sender {
-    /// Check to see if this `Sender` can send more data.
-    pub(crate) fn poll_ready(
-        &mut self,
-        cx: &mut task::Context<'_>,
-    ) -> Poll<crate::Result<()>> {
-        loop {}
-    }
-    fn poll_want(&mut self, cx: &mut task::Context<'_>) -> Poll<crate::Result<()>> {
-        loop {}
-    }
-    async fn ready(&mut self) -> crate::Result<()> {
-        loop {}
-    }
-    /// Send data on data channel when it is ready.
-    pub(crate) async fn send_data(&mut self, chunk: Bytes) -> crate::Result<()> {
-        loop {}
-    }
-    /// Send trailers on trailers channel.
-    pub(crate) async fn send_trailers(
-        &mut self,
-        trailers: HeaderMap,
-    ) -> crate::Result<()> {
-        loop {}
-    }
-    /// Try to send data on this channel.
-    ///
-    /// # Errors
-    ///
-    /// Returns `Err(Bytes)` if the channel could not (currently) accept
-    /// another `Bytes`.
-    ///
-    /// # Note
-    ///
-    /// This is mostly useful for when trying to send from some other thread
-    /// that doesn't have an async context. If in an async context, prefer
-    /// `send_data()` instead.
-    pub(crate) fn try_send_data(&mut self, chunk: Bytes) -> Result<(), Bytes> {
-        loop {}
-    }
-    /// Aborts the body in an abnormal fashion.
-    pub(crate) fn abort(self) {
-        loop {}
-    }
-    #[cfg(feature = "http1")]
-    pub(crate) fn send_error(&mut self, err: crate::Error) {
-        loop {}
-    }
-}
+impl Sender {}
 impl fmt::Debug for Sender {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         loop {}
