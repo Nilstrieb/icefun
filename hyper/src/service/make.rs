@@ -1,23 +1,17 @@
-use std::error::Error as StdError;
-use std::fmt;
-use tokio::io::{AsyncRead, AsyncWrite};
 use super::{HttpService, Service};
 use crate::body::HttpBody;
 use crate::common::{task, Future, Poll};
+use std::error::Error as StdError;
+use std::fmt;
+use tokio::io::{AsyncRead, AsyncWrite};
 pub(crate) trait MakeConnection<Target>: self::sealed::Sealed<(Target,)> {
     type Connection: AsyncRead + AsyncWrite;
     type Error;
     type Future: Future<Output = Result<Self::Connection, Self::Error>>;
-    fn poll_ready(
-        &mut self,
-        cx: &mut task::Context<'_>,
-    ) -> Poll<Result<(), Self::Error>>;
+    fn poll_ready(&mut self, cx: &mut task::Context<'_>) -> Poll<Result<(), Self::Error>>;
     fn make_connection(&mut self, target: Target) -> Self::Future;
 }
-impl<S, Target> self::sealed::Sealed<(Target,)> for S
-where
-    S: Service<Target>,
-{}
+impl<S, Target> self::sealed::Sealed<(Target,)> for S where S: Service<Target> {}
 impl<S, Target> MakeConnection<Target> for S
 where
     S: Service<Target>,
@@ -26,10 +20,7 @@ where
     type Connection = S::Response;
     type Error = S::Error;
     type Future = S::Future;
-    fn poll_ready(
-        &mut self,
-        cx: &mut task::Context<'_>,
-    ) -> Poll<Result<(), Self::Error>> {
+    fn poll_ready(&mut self, cx: &mut task::Context<'_>) -> Poll<Result<(), Self::Error>> {
         loop {}
     }
     fn make_connection(&mut self, target: Target) -> Self::Future {
@@ -43,10 +34,7 @@ pub trait MakeServiceRef<Target, ReqBody>: self::sealed::Sealed<(Target, ReqBody
     type MakeError: Into<Box<dyn StdError + Send + Sync>>;
     type Future: Future<Output = Result<Self::Service, Self::MakeError>>;
     type __DontNameMe: self::sealed::CantImpl;
-    fn poll_ready_ref(
-        &mut self,
-        cx: &mut task::Context<'_>,
-    ) -> Poll<Result<(), Self::MakeError>>;
+    fn poll_ready_ref(&mut self, cx: &mut task::Context<'_>) -> Poll<Result<(), Self::MakeError>>;
     fn make_service_ref(&mut self, target: &Target) -> Self::Future;
 }
 impl<T, Target, E, ME, S, F, IB, OB> MakeServiceRef<Target, IB> for T
@@ -65,10 +53,7 @@ where
     type MakeError = ME;
     type Future = F;
     type __DontNameMe = self::sealed::CantName;
-    fn poll_ready_ref(
-        &mut self,
-        cx: &mut task::Context<'_>,
-    ) -> Poll<Result<(), Self::MakeError>> {
+    fn poll_ready_ref(&mut self, cx: &mut task::Context<'_>) -> Poll<Result<(), Self::MakeError>> {
         loop {}
     }
     fn make_service_ref(&mut self, target: &Target) -> Self::Future {
@@ -81,42 +66,8 @@ where
     S: HttpService<B1, ResBody = B2>,
     B1: HttpBody,
     B2: HttpBody,
-{}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+{
+}
 
 pub fn make_service_fn<F, Target, Ret>(f: F) -> MakeServiceFn<F>
 where
@@ -139,10 +90,7 @@ where
     type Error = MkErr;
     type Response = Svc;
     type Future = Ret;
-    fn poll_ready(
-        &mut self,
-        _cx: &mut task::Context<'_>,
-    ) -> Poll<Result<(), Self::Error>> {
+    fn poll_ready(&mut self, _cx: &mut task::Context<'_>) -> Poll<Result<(), Self::Error>> {
         loop {}
     }
     fn call(&mut self, target: &'t Target) -> Self::Future {

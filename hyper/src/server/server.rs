@@ -41,11 +41,11 @@ impl Server<AddrIncoming, ()> {
 }
 
 #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
-impl<I, IO, IE, S, B, E> Future for Server<I, S, E>
+impl<I, IO, IE, S, E> Future for Server<I, S, E>
 where
     I: Accept<Conn = IO, Error = IE>,
     IE: Into<Box<dyn StdError + Send + Sync>>,
-    S: MakeServiceRef<IO, Body, ResBody = B>,
+    S: MakeServiceRef<IO, Body>,
     E: NewSvcExec<IO, S::Future, S::Service, E, NoopWatcher>,
 {
     type Output = ();

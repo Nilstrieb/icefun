@@ -5,31 +5,25 @@
 //! - The [`Accept`](Accept) trait used to asynchronously accept incoming
 //!   connections.
 //! - Utilities like `poll_fn` to ease creating a custom `Accept`.
-#[cfg(feature = "stream")]
-use futures_core::Stream;
-#[cfg(feature = "stream")]
-use pin_project_lite::pin_project;
 use crate::common::{
     task::{self, Poll},
     Pin,
 };
+#[cfg(feature = "stream")]
+use futures_core::Stream;
+#[cfg(feature = "stream")]
+use pin_project_lite::pin_project;
 
 pub trait Accept {
-    
     type Conn;
-    
+
     type Error;
-    
+
     fn poll_accept(
         self: Pin<&mut Self>,
         cx: &mut task::Context<'_>,
     ) -> Poll<Option<Result<Self::Conn, Self::Error>>>;
 }
-
-
-
-
-
 
 #[cfg(feature = "stream")]
 pub fn from_stream<S, IO, E>(stream: S) -> impl Accept<Conn = IO, Error = E>
@@ -49,7 +43,7 @@ where
             self: Pin<&mut Self>,
             cx: &mut task::Context<'_>,
         ) -> Poll<Option<Result<Self::Conn, Self::Error>>> {
-            self.project().stream.poll_next(cx)
+            loop {}
         }
     }
     FromStream { stream }

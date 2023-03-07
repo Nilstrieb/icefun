@@ -5,25 +5,20 @@ use std::time::Duration;
 
 use futures_util::future::{self, Either, FutureExt as _, TryFutureExt as _};
 
-use http::uri::{Port, Scheme};
-use http::{Request, Response, Uri, Version};
-use tracing::{debug, trace};
 use super::conn;
 use super::connect::{self, sealed::Connect, Alpn, Connected, Connection};
-use super::pool::{
-    self, Key as PoolKey, Pool, Poolable, Pooled, Reservation,
-};
+use super::pool::{self, Key as PoolKey, Pool, Poolable, Pooled, Reservation};
 #[cfg(feature = "tcp")]
 use super::HttpConnector;
 use crate::body::{Body, HttpBody};
 use crate::common::{
-    exec::BoxSendFuture, sync_wrapper::SyncWrapper, lazy as hyper_lazy, task, Future,
-    Lazy, Pin, Poll,
+    exec::BoxSendFuture, lazy as hyper_lazy, sync_wrapper::SyncWrapper, task, Future, Lazy, Pin,
+    Poll,
 };
 use crate::rt::Executor;
-
-
-
+use http::uri::{Port, Scheme};
+use http::{Request, Response, Uri, Version};
+use tracing::{debug, trace};
 
 #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
 pub struct Client<C, B = Body> {
@@ -39,23 +34,12 @@ struct Config {
     ver: Ver,
 }
 
-
-
 #[must_use = "futures do nothing unless polled"]
 pub struct ResponseFuture {
-    inner: SyncWrapper<
-        Pin<Box<dyn Future<Output = crate::Result<Response<Body>>> + Send>>,
-    >,
+    inner: SyncWrapper<Pin<Box<dyn Future<Output = crate::Result<Response<Body>>> + Send>>>,
 }
 #[cfg(feature = "tcp")]
 impl Client<HttpConnector, Body> {
-    
-    
-    
-    
-    
-    
-    
     #[cfg_attr(docsrs, doc(cfg(feature = "tcp")))]
     #[inline]
     pub(crate) fn new() -> Client<HttpConnector, Body> {
@@ -68,200 +52,7 @@ impl Default for Client<HttpConnector, Body> {
         loop {}
     }
 }
-impl Client<(), Body> {
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    #[inline]
-    pub(crate) fn builder() -> Builder {
-        loop {}
-    }
-}
-impl<C, B> Client<C, B>
-where
-    C: Connect + Clone + Send + Sync + 'static,
-    B: HttpBody + Send + 'static,
-    B::Data: Send,
-    B::Error: Into<Box<dyn StdError + Send + Sync>>,
-{
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    pub(crate) fn get(&self, uri: Uri) -> ResponseFuture
-    where
-        B: Default,
-    {
-        loop {}
-    }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    pub(crate) fn request(&self, mut req: Request<B>) -> ResponseFuture {
-        loop {}
-    }
-    async fn retryably_send_request(
-        self,
-        mut req: Request<B>,
-        pool_key: PoolKey,
-    ) -> crate::Result<Response<Body>> {
-        loop {}
-    }
-    async fn send_request(
-        &self,
-        mut req: Request<B>,
-        pool_key: PoolKey,
-    ) -> Result<Response<Body>, ClientError<B>> {
-        loop {}
-    }
-    async fn connection_for(
-        &self,
-        pool_key: PoolKey,
-    ) -> Result<Pooled<PoolClient<B>>, ClientConnectError> {
-        loop {}
-    }
-    fn connect_to(
-        &self,
-        pool_key: PoolKey,
-    ) -> impl Lazy<Output = crate::Result<Pooled<PoolClient<B>>>> + Unpin {
-        let executor = self.conn_builder.exec.clone();
-        let pool = self.pool.clone();
-        #[cfg(not(feature = "http2"))]
-        let conn_builder = self.conn_builder.clone();
-        #[cfg(feature = "http2")]
-        let mut conn_builder = self.conn_builder.clone();
-        let ver = self.config.ver;
-        let is_ver_h2 = ver == Ver::Http2;
-        let connector = self.connector.clone();
-        let dst = domain_as_uri(pool_key.clone());
-        hyper_lazy(move || {
-            let connecting = match pool.connecting(&pool_key, ver) {
-                Some(lock) => lock,
-                None => {
-                    let canceled = crate::Error::new_canceled()
-                        .with("HTTP/2 connection in progress");
-                    return Either::Right(future::err(canceled));
-                }
-            };
-            Either::Left(
-                connector
-                    .connect(connect::sealed::Internal, dst)
-                    .map_err(crate::Error::new_connect)
-                    .and_then(move |io| {
-                        let connected = io.connected();
-                        let connecting = if connected.alpn == Alpn::H2 && !is_ver_h2 {
-                            match connecting.alpn_h2(&pool) {
-                                Some(lock) => {
-                                    trace!("ALPN negotiated h2, updating pool");
-                                    lock
-                                }
-                                None => {
-                                    let canceled = crate::Error::new_canceled()
-                                        .with("ALPN upgraded to HTTP/2");
-                                    return Either::Right(future::err(canceled));
-                                }
-                            }
-                        } else {
-                            connecting
-                        };
-                        #[cfg_attr(not(feature = "http2"), allow(unused))]
-                        let is_h2 = is_ver_h2 || connected.alpn == Alpn::H2;
-                        #[cfg(feature = "http2")]
-                        {
-                            conn_builder.http2_only(is_h2);
-                        }
-                        Either::Left(
-                            Box::pin(async move {
-                                let (tx, conn) = conn_builder.handshake(io).await?;
-                                trace!(
-                                    "handshake complete, spawning background dispatcher task"
-                                );
-                                executor
-                                    .execute(
-                                        conn
-                                            .map_err(|e| debug!("client connection error: {}", e))
-                                            .map(|_| ()),
-                                    );
-                                let tx = tx.when_ready().await?;
-                                let tx = {
-                                    #[cfg(feature = "http2")]
-                                    {
-                                        if is_h2 {
-                                            PoolTx::Http2(tx.into_http2())
-                                        } else {
-                                            PoolTx::Http1(tx)
-                                        }
-                                    }
-                                    #[cfg(not(feature = "http2"))] PoolTx::Http1(tx)
-                                };
-                                Ok(
-                                    pool
-                                        .pooled(
-                                            connecting,
-                                            PoolClient {
-                                                conn_info: connected,
-                                                tx,
-                                            },
-                                        ),
-                                )
-                            }),
-                        )
-                    }),
-            )
-        })
-    }
-}
+
 impl<C, B> tower_service::Service<Request<B>> for Client<C, B>
 where
     C: Connect + Clone + Send + Sync + 'static,
@@ -272,10 +63,7 @@ where
     type Response = Response<Body>;
     type Error = crate::Error;
     type Future = ResponseFuture;
-    fn poll_ready(
-        &mut self,
-        _: &mut task::Context<'_>,
-    ) -> Poll<Result<(), Self::Error>> {
+    fn poll_ready(&mut self, _: &mut task::Context<'_>) -> Poll<Result<(), Self::Error>> {
         loop {}
     }
     fn call(&mut self, req: Request<B>) -> Self::Future {
@@ -292,10 +80,7 @@ where
     type Response = Response<Body>;
     type Error = crate::Error;
     type Future = ResponseFuture;
-    fn poll_ready(
-        &mut self,
-        _: &mut task::Context<'_>,
-    ) -> Poll<Result<(), Self::Error>> {
+    fn poll_ready(&mut self, _: &mut task::Context<'_>) -> Poll<Result<(), Self::Error>> {
         loop {}
     }
     fn call(&mut self, req: Request<B>) -> Self::Future {
@@ -396,12 +181,14 @@ where
 #[allow(missing_debug_implementations)]
 enum ClientError<B> {
     Normal(crate::Error),
-    Canceled { connection_reused: bool, req: Request<B>, reason: crate::Error },
+    Canceled {
+        connection_reused: bool,
+        req: Request<B>,
+        reason: crate::Error,
+    },
 }
 impl<B> ClientError<B> {
-    fn map_with_reused(
-        conn_reused: bool,
-    ) -> impl Fn((crate::Error, Option<Request<B>>)) -> Self {
+    fn map_with_reused(conn_reused: bool) -> impl Fn((crate::Error, Option<Request<B>>)) -> Self {
         move |(err, orig_req)| {
             if let Some(req) = orig_req {
                 ClientError::Canceled {
@@ -450,24 +237,6 @@ fn is_schema_secure(uri: &Uri) -> bool {
     loop {}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
 #[derive(Clone)]
 pub struct Builder {
@@ -496,11 +265,7 @@ impl Builder {
     {
         loop {}
     }
-    
-    
-    
-    
-    
+
     pub(crate) fn pool_idle_timeout<D>(&mut self, val: D) -> &mut Self
     where
         D: Into<Option<Duration>>,
@@ -512,198 +277,61 @@ impl Builder {
     pub(crate) fn max_idle_per_host(&mut self, max_idle: usize) -> &mut Self {
         loop {}
     }
-    
-    
-    
+
     pub(crate) fn pool_max_idle_per_host(&mut self, max_idle: usize) -> &mut Self {
         loop {}
     }
-    
-    
-    
-    
-    
+
     pub(crate) fn http1_read_buf_exact_size(&mut self, sz: usize) -> &mut Self {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     #[cfg(feature = "http1")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http1")))]
     pub(crate) fn http1_max_buf_size(&mut self, max: usize) -> &mut Self {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     pub(crate) fn http1_allow_spaces_after_header_name_in_responses(
         &mut self,
         val: bool,
     ) -> &mut Self {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     pub(crate) fn http1_allow_obsolete_multiline_headers_in_responses(
         &mut self,
         val: bool,
     ) -> &mut Self {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    pub(crate) fn http1_ignore_invalid_headers_in_responses(
-        &mut self,
-        val: bool,
-    ) -> &mut Builder {
+
+    pub(crate) fn http1_ignore_invalid_headers_in_responses(&mut self, val: bool) -> &mut Builder {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     pub(crate) fn http1_writev(&mut self, enabled: bool) -> &mut Builder {
         loop {}
     }
-    
-    
-    
-    
-    
-    
+
     pub(crate) fn http1_title_case_headers(&mut self, val: bool) -> &mut Self {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     pub(crate) fn http1_preserve_header_case(&mut self, val: bool) -> &mut Self {
         loop {}
     }
-    
-    
-    
+
     pub(crate) fn http09_responses(&mut self, val: bool) -> &mut Self {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_only(&mut self, val: bool) -> &mut Self {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
+
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_initial_stream_window_size(
@@ -712,11 +340,7 @@ impl Builder {
     ) -> &mut Self {
         loop {}
     }
-    
-    
-    
-    
-    
+
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_initial_connection_window_size(
@@ -725,39 +349,19 @@ impl Builder {
     ) -> &mut Self {
         loop {}
     }
-    
-    
-    
-    
-    
+
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_adaptive_window(&mut self, enabled: bool) -> &mut Self {
         loop {}
     }
-    
-    
-    
-    
-    
+
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
-    pub(crate) fn http2_max_frame_size(
-        &mut self,
-        sz: impl Into<Option<u32>>,
-    ) -> &mut Self {
+    pub(crate) fn http2_max_frame_size(&mut self, sz: impl Into<Option<u32>>) -> &mut Self {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     #[cfg(feature = "runtime")]
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
@@ -767,101 +371,50 @@ impl Builder {
     ) -> &mut Self {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     #[cfg(feature = "runtime")]
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_keep_alive_timeout(&mut self, timeout: Duration) -> &mut Self {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     #[cfg(feature = "runtime")]
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_keep_alive_while_idle(&mut self, enabled: bool) -> &mut Self {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
+
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
-    pub(crate) fn http2_max_concurrent_reset_streams(
-        &mut self,
-        max: usize,
-    ) -> &mut Self {
+    pub(crate) fn http2_max_concurrent_reset_streams(&mut self, max: usize) -> &mut Self {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
+
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_max_send_buf_size(&mut self, max: usize) -> &mut Self {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     #[inline]
     pub(crate) fn retry_canceled_requests(&mut self, val: bool) -> &mut Self {
         loop {}
     }
-    
-    
-    
-    
-    
-    
+
     #[inline]
     pub(crate) fn set_host(&mut self, val: bool) -> &mut Self {
         loop {}
     }
-    
+
     pub(crate) fn executor<E>(&mut self, exec: E) -> &mut Self
     where
         E: Executor<BoxSendFuture> + Send + Sync + 'static,
     {
         loop {}
     }
-    
+
     #[cfg(feature = "tcp")]
     pub(crate) fn build_http<B>(&self) -> Client<HttpConnector, B>
     where
@@ -870,7 +423,7 @@ impl Builder {
     {
         loop {}
     }
-    
+
     pub(crate) fn build<C, B>(&self, connector: C) -> Client<C, B>
     where
         C: Connect + Clone,

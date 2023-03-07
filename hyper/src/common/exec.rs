@@ -1,7 +1,3 @@
-use std::fmt;
-use std::future::Future;
-use std::pin::Pin;
-use std::sync::Arc;
 #[cfg(all(feature = "server", any(feature = "http1", feature = "http2")))]
 use crate::body::Body;
 #[cfg(feature = "server")]
@@ -13,6 +9,10 @@ use crate::rt::Executor;
 use crate::server::server::{new_svc::NewSvcTask, Watcher};
 #[cfg(all(feature = "server", any(feature = "http1", feature = "http2")))]
 use crate::service::HttpService;
+use std::fmt;
+use std::future::Future;
+use std::pin::Pin;
+use std::sync::Arc;
 #[cfg(feature = "server")]
 pub trait ConnStreamExec<F, B: HttpBody>: Clone {
     fn execute_h2stream(&mut self, fut: H2Stream<F, B>);
@@ -26,14 +26,6 @@ pub(crate) type BoxSendFuture = Pin<Box<dyn Future<Output = ()> + Send>>;
 pub enum Exec {
     Default,
     Executor(Arc<dyn Executor<BoxSendFuture> + Send + Sync>),
-}
-impl Exec {
-    pub(crate) fn execute<F>(&self, fut: F)
-    where
-        F: Future<Output = ()> + Send + 'static,
-    {
-        loop {}
-    }
 }
 impl fmt::Debug for Exec {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
