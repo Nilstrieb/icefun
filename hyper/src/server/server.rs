@@ -79,7 +79,6 @@ impl<I, E> Builder<I, E> {
 }
 pub trait Watcher<I, S, E>: Clone {
     type Future;
-    fn watch(&self) -> Self::Future;
 }
 #[allow(missing_debug_implementations)]
 #[derive(Copy, Clone)]
@@ -89,39 +88,31 @@ where
     S: HttpService<Body>,
 {
     type Future = ();
-    fn watch(&self) -> Self::Future {
-        loop {}
-    }
 }
 pub(crate) mod new_svc {
     use super::Watcher;
     use crate::body::{Body, HttpBody};
     use crate::common::exec::ConnStreamExec;
-    use crate::common::{task, Future, Pin, Poll, Unpin};
+    use crate::common::{task, Future, Pin, Poll};
     use crate::service::HttpService;
-    use std::error::Error as StdError;
-    use tokio::io::{AsyncRead, AsyncWrite};
 
     pub struct NewSvcTask<I, S, E, W: Watcher<I, S, E>> {
         state: State<I, S, E, W>,
     }
 
-    pub(super) enum State<I, S, E, W: Watcher<I, S, E>> {
-        Connecting { a: (I, S, W, E) },
-
-        Connected { future: W::Future },
+    pub(super) struct State<I, S, E, W: Watcher<I, S, E>> {
+        a: (I, S, E),
+        future: W::Future,
     }
 
     impl<I, S: HttpService<Body>, E, W: Watcher<I, S, E>> NewSvcTask<I, S, E, W> {
-        pub(super) fn new(watcher: W) -> Self {
+        pub(super) fn new(_: W) -> Self {
             loop {}
         }
     }
     impl<I, S, B, E, W> Future for NewSvcTask<I, S, E, W>
     where
         S: HttpService<Body, ResBody = B>,
-        B: HttpBody + 'static,
-        B::Error: Into<Box<dyn StdError + Send + Sync>>,
         E: ConnStreamExec<S::Future, B>,
         W: Watcher<I, S, E>,
     {
