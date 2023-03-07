@@ -3,15 +3,14 @@ use super::accept::Accept;
 use super::conn::Http as Http_;
 #[cfg(all(feature = "tcp"))]
 use super::tcp::AddrIncoming;
-use crate::body::{Body, HttpBody};
+use crate::body::Body;
 use crate::common::exec::Exec;
-use crate::common::exec::{ConnStreamExec, NewSvcExec};
-use crate::common::{task, Future, Pin, Poll, Unpin};
+use crate::common::exec::NewSvcExec;
+use crate::common::{task, Future, Pin, Poll};
 use crate::service::{HttpService, MakeServiceRef};
-use pin_project_lite::pin_project;
 use std::error::Error as StdError;
 #[cfg(feature = "tcp")]
-use tokio::io::{AsyncRead, AsyncWrite};
+
 pub struct Server<I, S, E = Exec> {
     incoming: I,
     make_service: S,

@@ -104,24 +104,6 @@ pub(super) struct Pending {
 pub(super) fn pending() -> (Pending, OnUpgrade) {
     loop {}
 }
-impl Upgraded {
-    #[cfg(any(feature = "http1", feature = "http2", test))]
-    pub(super) fn new<T>(io: T, read_buf: Bytes) -> Self
-    where
-        T: AsyncRead + AsyncWrite + Unpin + Send + 'static,
-    {
-        loop {}
-    }
-    
-    
-    
-    
-    pub(crate) fn downcast<T: AsyncRead + AsyncWrite + Unpin + 'static>(
-        self,
-    ) -> Result<Parts<T>, Self> {
-        loop {}
-    }
-}
 impl AsyncRead for Upgraded {
     fn poll_read(
         mut self: Pin<&mut Self>,

@@ -5,10 +5,7 @@
 //! - The [`Accept`](Accept) trait used to asynchronously accept incoming
 //!   connections.
 //! - Utilities like `poll_fn` to ease creating a custom `Accept`.
-use crate::common::{
-    task::{self, Poll},
-    Pin,
-};
+
 #[cfg(feature = "stream")]
 use futures_core::Stream;
 #[cfg(feature = "stream")]
