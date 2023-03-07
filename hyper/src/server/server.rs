@@ -23,12 +23,7 @@ pub struct Builder<I, E = Exec> {
     incoming: I,
     protocol: E,
 }
-#[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
-impl<I> Server<I, ()> {
-    pub fn builder(incoming: I) -> Builder<I> {
-        loop {}
-    }
-}
+
 #[cfg(feature = "tcp")]
 #[cfg_attr(
     docsrs,
@@ -40,6 +35,10 @@ impl Server<AddrIncoming, ()> {
     }
 }
 
+fn mk<T>() -> T {
+    loop {}
+}
+
 #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
 impl<I, IO, IE, S, E> Future for Server<I, S, E>
 where
@@ -49,26 +48,14 @@ where
     E: NewSvcExec<IO, S::Service, E, NoopWatcher>,
 {
     type Output = ();
-    fn poll(mut self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<Self::Output> {
+    fn poll(self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<Self::Output> {
         loop {
-            let fut = NewSvcTask::new(NoopWatcher);
-            unsafe {
-                self.as_mut()
-                    .get_unchecked_mut()
-                    .protocol
-                    .execute_new_svc(fut);
-            }
+            let _a: NewSvcTask<IO, <S as MakeServiceRef<IO, Body>>::Service, E, NoopWatcher> = mk();
         }
     }
 }
 
 impl<I, E> Builder<I, E> {
-    #[doc(hidden)]
-    #[cfg(feature = "http1")]
-    pub fn http1_pipeline_flush(self, val: bool) -> Self {
-        loop {}
-    }
-
     pub fn serve<S, B>(self, _: S) -> Server<I, S>
     where
         I: Accept,
@@ -91,7 +78,7 @@ where
 }
 pub(crate) mod new_svc {
     use super::Watcher;
-    use crate::body::{Body, HttpBody};
+    use crate::body::Body;
     use crate::common::exec::ConnStreamExec;
     use crate::common::{task, Future, Pin, Poll};
     use crate::service::HttpService;

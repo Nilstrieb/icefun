@@ -8,8 +8,6 @@ pub(crate) trait MakeConnection<Target>: self::sealed::Sealed<(Target,)> {
     type Connection: AsyncRead + AsyncWrite;
     type Error;
     type Future: Future<Output = Result<Self::Connection, Self::Error>>;
-    fn poll_ready(&mut self, cx: &mut task::Context<'_>) -> Poll<Result<(), Self::Error>>;
-    fn make_connection(&mut self, target: Target) -> Self::Future;
 }
 impl<S, Target> self::sealed::Sealed<(Target,)> for S where S: Service<Target> {}
 impl<S, Target> MakeConnection<Target> for S
@@ -20,12 +18,6 @@ where
     type Connection = S::Response;
     type Error = S::Error;
     type Future = S::Future;
-    fn poll_ready(&mut self, cx: &mut task::Context<'_>) -> Poll<Result<(), Self::Error>> {
-        loop {}
-    }
-    fn make_connection(&mut self, target: Target) -> Self::Future {
-        loop {}
-    }
 }
 pub trait MakeServiceRef<Target, ReqBody> {
     type ResBody;
