@@ -12,23 +12,11 @@ use pin_project_lite::pin_project;
 use std::error::Error as StdError;
 #[cfg(feature = "tcp")]
 use tokio::io::{AsyncRead, AsyncWrite};
-pin_project! {
-    #[doc =
-    " A listening HTTP server that accepts connections in both HTTP1 and HTTP2 by default."]
-    #[doc = ""] #[doc =
-    " `Server` is a `Future` mapping a bound listener with a set of service"] #[doc =
-    " handlers. It is built using the [`Builder`](Builder), and the future"] #[doc =
-    " completes when the server has been shutdown. It should be run by an"] #[doc =
-    " `Executor`."]
-
-    pub struct Server < I, S, E = Exec > {
-
-        #[pin] incoming : I,
-        make_service : S,
-        protocol : Http_ < E >,
-    }
+pub struct Server<I, S, E = Exec> {
+    incoming: I,
+    make_service: S,
+    protocol: E,
 }
-
 #[derive(Debug)]
 #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
 pub struct Builder<I, E = Exec> {
@@ -52,25 +40,24 @@ impl Server<AddrIncoming, ()> {
     }
 }
 
-
 #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
 impl<I, IO, IE, S, B, E> Future for Server<I, S, E>
 where
     I: Accept<Conn = IO, Error = IE>,
     IE: Into<Box<dyn StdError + Send + Sync>>,
-    IO: AsyncRead + AsyncWrite + Unpin + Send + 'static,
     S: MakeServiceRef<IO, Body, ResBody = B>,
-    S::Error: Into<Box<dyn StdError + Send + Sync>>,
-    B: HttpBody + 'static,
-    B::Error: Into<Box<dyn StdError + Send + Sync>>,
-    E: ConnStreamExec<<S::Service as HttpService<Body>>::Future, B>,
     E: NewSvcExec<IO, S::Future, S::Service, E, NoopWatcher>,
 {
-    type Output = crate::Result<()>;
+    type Output = ();
     fn poll(mut self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<Self::Output> {
         loop {
             let fut = NewSvcTask::new(NoopWatcher);
-            self.as_mut().project().protocol.exec.execute_new_svc(fut);
+            unsafe {
+                self.as_mut()
+                    .get_unchecked_mut()
+                    .protocol
+                    .execute_new_svc(fut);
+            }
         }
     }
 }

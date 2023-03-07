@@ -18,7 +18,7 @@ pub trait ConnStreamExec<F, B: HttpBody>: Clone {
     fn execute_h2stream(&mut self, fut: H2Stream<F, B>);
 }
 #[cfg(all(feature = "server", any(feature = "http1", feature = "http2")))]
-pub trait NewSvcExec<I, N, S: HttpService<Body>, E, W: Watcher<I, S, E>>: Clone {
+pub trait NewSvcExec<I, N, S, E, W: Watcher<I, S, E>>: Clone {
     fn execute_new_svc(&mut self, fut: NewSvcTask<I, N, S, E, W>);
 }
 pub(crate) type BoxSendFuture = Pin<Box<dyn Future<Output = ()> + Send>>;
