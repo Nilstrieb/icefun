@@ -25,11 +25,7 @@ impl<C, B, T> Connect<C, B, T> {
     /// Create a new `Connect` with some inner connector `C` and a connection
     /// builder.
     pub(crate) fn new(inner: C, builder: Builder) -> Self {
-        Self {
-            inner,
-            builder,
-            _pd: PhantomData,
-        }
+        loop {}
     }
 }
 impl<C, B, T> Service<T> for Connect<C, B, T>
@@ -51,37 +47,9 @@ where
         &mut self,
         cx: &mut task::Context<'_>,
     ) -> Poll<Result<(), Self::Error>> {
-        self.inner
-            .poll_ready(cx)
-            .map_err(|e| crate::Error::new(crate::error::Kind::Connect).with(e.into()))
+        loop {}
     }
     fn call(&mut self, req: T) -> Self::Future {
-        let builder = self.builder.clone();
-        let io = self.inner.make_connection(req);
-        let fut = async move {
-            match io.await {
-                Ok(io) => {
-                    match builder.handshake(io).await {
-                        Ok((sr, conn)) => {
-                            builder
-                                .exec
-                                .execute(async move {
-                                    if let Err(e) = conn.await {
-                                        debug!("connection error: {:?}", e);
-                                    }
-                                });
-                            Ok(sr)
-                        }
-                        Err(e) => Err(e),
-                    }
-                }
-                Err(e) => {
-                    let err = crate::Error::new(crate::error::Kind::Connect)
-                        .with(e.into());
-                    Err(err)
-                }
-            }
-        };
-        Box::pin(fut)
+        loop {}
     }
 }

@@ -30,10 +30,10 @@ where
         &mut self,
         cx: &mut task::Context<'_>,
     ) -> Poll<Result<(), Self::Error>> {
-        Service::poll_ready(self, cx)
+        loop {}
     }
     fn make_connection(&mut self, target: Target) -> Self::Future {
-        Service::call(self, target)
+        loop {}
     }
 }
 pub trait MakeServiceRef<Target, ReqBody>: self::sealed::Sealed<(Target, ReqBody)> {
@@ -69,10 +69,10 @@ where
         &mut self,
         cx: &mut task::Context<'_>,
     ) -> Poll<Result<(), Self::MakeError>> {
-        self.poll_ready(cx)
+        loop {}
     }
     fn make_service_ref(&mut self, target: &Target) -> Self::Future {
-        self.call(target)
+        loop {}
     }
 }
 impl<T, Target, S, B1, B2> self::sealed::Sealed<(Target, B1)> for T
@@ -123,7 +123,7 @@ where
     F: FnMut(&Target) -> Ret,
     Ret: Future,
 {
-    MakeServiceFn { f }
+    loop {}
 }
 /// `MakeService` returned from [`make_service_fn`]
 #[derive(Clone, Copy)]
@@ -143,15 +143,15 @@ where
         &mut self,
         _cx: &mut task::Context<'_>,
     ) -> Poll<Result<(), Self::Error>> {
-        Poll::Ready(Ok(()))
+        loop {}
     }
     fn call(&mut self, target: &'t Target) -> Self::Future {
-        (self.f)(target)
+        loop {}
     }
 }
 impl<F> fmt::Debug for MakeServiceFn<F> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("MakeServiceFn").finish()
+        loop {}
     }
 }
 mod sealed {

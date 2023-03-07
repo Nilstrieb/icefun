@@ -107,7 +107,7 @@ pub(crate) async fn handshake<T>(
 where
     T: AsyncRead + AsyncWrite + Unpin + Send + 'static,
 {
-    Builder::new().handshake(io).await
+    loop {}
 }
 /// The sender side of an established connection.
 pub struct SendRequest<B> {
@@ -196,27 +196,20 @@ impl<B> SendRequest<B> {
         &mut self,
         cx: &mut task::Context<'_>,
     ) -> Poll<crate::Result<()>> {
-        self.dispatch.poll_ready(cx)
+        loop {}
     }
     pub(super) async fn when_ready(self) -> crate::Result<Self> {
-        let mut me = Some(self);
-        future::poll_fn(move |cx| {
-                ready!(me.as_mut().unwrap().poll_ready(cx))?;
-                Poll::Ready(Ok(me.take().unwrap()))
-            })
-            .await
+        loop {}
     }
     pub(super) fn is_ready(&self) -> bool {
-        self.dispatch.is_ready()
+        loop {}
     }
     pub(super) fn is_closed(&self) -> bool {
-        self.dispatch.is_closed()
+        loop {}
     }
     #[cfg(feature = "http2")]
     pub(super) fn into_http2(self) -> Http2SendRequest<B> {
-        Http2SendRequest {
-            dispatch: self.dispatch.unbound(),
-        }
+        loop {}
     }
 }
 impl<B> SendRequest<B>
@@ -265,15 +258,7 @@ where
     /// # fn main() {}
     /// ```
     pub(crate) fn send_request(&mut self, req: Request<B>) -> ResponseFuture {
-        let inner = match self.dispatch.send(req) {
-            Ok(rx) => ResponseFutureState::Waiting(rx),
-            Err(_req) => {
-                debug!("connection was not ready");
-                let err = crate::Error::new_canceled().with("connection was not ready");
-                ResponseFutureState::Error(Some(err))
-            }
-        };
-        ResponseFuture { inner }
+        loop {}
     }
     pub(super) fn send_request_retryable(
         &mut self,
@@ -316,24 +301,24 @@ where
         &mut self,
         cx: &mut task::Context<'_>,
     ) -> Poll<Result<(), Self::Error>> {
-        self.poll_ready(cx)
+        loop {}
     }
     fn call(&mut self, req: Request<B>) -> Self::Future {
-        self.send_request(req)
+        loop {}
     }
 }
 impl<B> fmt::Debug for SendRequest<B> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("SendRequest").finish()
+        loop {}
     }
 }
 #[cfg(feature = "http2")]
 impl<B> Http2SendRequest<B> {
     pub(super) fn is_ready(&self) -> bool {
-        self.dispatch.is_ready()
+        loop {}
     }
     pub(super) fn is_closed(&self) -> bool {
-        self.dispatch.is_closed()
+        loop {}
     }
 }
 #[cfg(feature = "http2")]
@@ -372,15 +357,13 @@ where
 #[cfg(feature = "http2")]
 impl<B> fmt::Debug for Http2SendRequest<B> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Http2SendRequest").finish()
+        loop {}
     }
 }
 #[cfg(feature = "http2")]
 impl<B> Clone for Http2SendRequest<B> {
     fn clone(&self) -> Self {
-        Http2SendRequest {
-            dispatch: self.dispatch.clone(),
-        }
+        loop {}
     }
 }
 impl<T, B> Connection<T, B>
@@ -394,18 +377,7 @@ where
     ///
     /// Only works for HTTP/1 connections. HTTP/2 connections will panic.
     pub(crate) fn into_parts(self) -> Parts<T> {
-        match self.inner.expect("already upgraded") {
-            #[cfg(feature = "http1")]
-            ProtoClient::H1 { h1 } => {
-                let (io, read_buf, _) = h1.into_inner();
-                Parts { io, read_buf, _inner: () }
-            }
-            ProtoClient::H2 { .. } => {
-                panic!("http2 cannot into_inner");
-            }
-            #[cfg(not(feature = "http1"))]
-            ProtoClient::H1 { h1 } => match h1.0 {}
-        }
+        loop {}
     }
     /// Poll the connection for completion, but without calling `shutdown`
     /// on the underlying IO.
@@ -422,16 +394,7 @@ where
         &mut self,
         cx: &mut task::Context<'_>,
     ) -> Poll<crate::Result<()>> {
-        match *self.inner.as_mut().expect("already upgraded") {
-            #[cfg(feature = "http1")]
-            ProtoClient::H1 { ref mut h1 } => h1.poll_without_shutdown(cx),
-            #[cfg(feature = "http2")]
-            ProtoClient::H2 { ref mut h2, .. } => Pin::new(h2).poll(cx).map_ok(|_| ()),
-            #[cfg(not(feature = "http1"))]
-            ProtoClient::H1 { ref mut h1 } => match h1.0 {}
-            #[cfg(not(feature = "http2"))]
-            ProtoClient::H2 { ref mut h2, .. } => match h2.0 {}
-        }
+        loop {}
     }
     /// Prevent shutdown of the underlying IO object at the end of service the request,
     /// instead run `into_parts`. This is a convenience wrapper over `poll_without_shutdown`.
@@ -455,10 +418,7 @@ where
     /// [2]: https://datatracker.ietf.org/doc/html/rfc8441#section-3
     #[cfg(feature = "http2")]
     pub(crate) fn http2_is_extended_connect_protocol_enabled(&self) -> bool {
-        match self.inner.as_ref().unwrap() {
-            ProtoClient::H1 { .. } => false,
-            ProtoClient::H2 { h2 } => h2.is_extended_connect_protocol_enabled(),
-        }
+        loop {}
     }
 }
 impl<T, B> Future for Connection<T, B>
@@ -470,23 +430,7 @@ where
 {
     type Output = crate::Result<()>;
     fn poll(mut self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<Self::Output> {
-        match ready!(Pin::new(self.inner.as_mut().unwrap()).poll(cx))? {
-            proto::Dispatched::Shutdown => Poll::Ready(Ok(())),
-            #[cfg(feature = "http1")]
-            proto::Dispatched::Upgrade(pending) => {
-                match self.inner.take() {
-                    Some(ProtoClient::H1 { h1 }) => {
-                        let (io, buf, _) = h1.into_inner();
-                        pending.fulfill(Upgraded::new(io, buf));
-                        Poll::Ready(Ok(()))
-                    }
-                    _ => {
-                        drop(pending);
-                        unreachable!("Upgrade expects h1");
-                    }
-                }
-            }
-        }
+        loop {}
     }
 }
 impl<T, B> fmt::Debug for Connection<T, B>
@@ -495,48 +439,27 @@ where
     B: HttpBody + 'static,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Connection").finish()
+        loop {}
     }
 }
 impl Builder {
     /// Creates a new connection builder.
     #[inline]
     pub(crate) fn new() -> Builder {
-        Builder {
-            exec: Exec::Default,
-            h09_responses: false,
-            h1_writev: None,
-            h1_read_buf_exact_size: None,
-            h1_parser_config: Default::default(),
-            h1_title_case_headers: false,
-            h1_preserve_header_case: false,
-            #[cfg(feature = "ffi")]
-            h1_preserve_header_order: false,
-            h1_max_buf_size: None,
-            #[cfg(feature = "ffi")]
-            h1_headers_raw: false,
-            #[cfg(feature = "http2")]
-            h2_builder: Default::default(),
-            #[cfg(feature = "http1")]
-            version: Proto::Http1,
-            #[cfg(not(feature = "http1"))]
-            version: Proto::Http2,
-        }
+        loop {}
     }
     /// Provide an executor to execute background HTTP2 tasks.
     pub(crate) fn executor<E>(&mut self, exec: E) -> &mut Builder
     where
         E: Executor<BoxSendFuture> + Send + Sync + 'static,
     {
-        self.exec = Exec::Executor(Arc::new(exec));
-        self
+        loop {}
     }
     /// Set whether HTTP/0.9 responses should be tolerated.
     ///
     /// Default is false.
     pub(crate) fn http09_responses(&mut self, enabled: bool) -> &mut Builder {
-        self.h09_responses = enabled;
-        self
+        loop {}
     }
     /// Set whether HTTP/1 connections will accept spaces between header names
     /// and the colon that follow them in responses.
@@ -561,8 +484,7 @@ impl Builder {
         &mut self,
         enabled: bool,
     ) -> &mut Builder {
-        self.h1_parser_config.allow_spaces_after_header_name_in_responses(enabled);
-        self
+        loop {}
     }
     /// Set whether HTTP/1 connections will accept obsolete line folding for
     /// header values.
@@ -602,8 +524,7 @@ impl Builder {
         &mut self,
         enabled: bool,
     ) -> &mut Builder {
-        self.h1_parser_config.allow_obsolete_multiline_headers_in_responses(enabled);
-        self
+        loop {}
     }
     /// Set whether HTTP/1 connections will silently ignored malformed header lines.
     ///
@@ -618,8 +539,7 @@ impl Builder {
         &mut self,
         enabled: bool,
     ) -> &mut Builder {
-        self.h1_parser_config.ignore_invalid_headers_in_responses(enabled);
-        self
+        loop {}
     }
     /// Set whether HTTP/1 connections should try to use vectored writes,
     /// or always flatten into a single buffer.
@@ -634,8 +554,7 @@ impl Builder {
     /// Default is `auto`. In this mode hyper will try to guess which
     /// mode to use
     pub(crate) fn http1_writev(&mut self, enabled: bool) -> &mut Builder {
-        self.h1_writev = Some(enabled);
-        self
+        loop {}
     }
     /// Set whether HTTP/1 connections will write header names as title case at
     /// the socket level.
@@ -644,8 +563,7 @@ impl Builder {
     ///
     /// Default is false.
     pub(crate) fn http1_title_case_headers(&mut self, enabled: bool) -> &mut Builder {
-        self.h1_title_case_headers = enabled;
-        self
+        loop {}
     }
     /// Set whether to support preserving original header cases.
     ///
@@ -661,8 +579,7 @@ impl Builder {
     ///
     /// Default is false.
     pub(crate) fn http1_preserve_header_case(&mut self, enabled: bool) -> &mut Builder {
-        self.h1_preserve_header_case = enabled;
-        self
+        loop {}
     }
     /// Set whether to support preserving original header order.
     ///
@@ -675,8 +592,7 @@ impl Builder {
     /// Default is false.
     #[cfg(feature = "ffi")]
     pub(crate) fn http1_preserve_header_order(&mut self, enabled: bool) -> &mut Builder {
-        self.h1_preserve_header_order = enabled;
-        self
+        loop {}
     }
     /// Sets the exact size of the read buffer to *always* use.
     ///
@@ -687,9 +603,7 @@ impl Builder {
         &mut self,
         sz: Option<usize>,
     ) -> &mut Builder {
-        self.h1_read_buf_exact_size = sz;
-        self.h1_max_buf_size = None;
-        self
+        loop {}
     }
     /// Set the maximum buffer size for the connection.
     ///
@@ -703,18 +617,11 @@ impl Builder {
     #[cfg(feature = "http1")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http1")))]
     pub(crate) fn http1_max_buf_size(&mut self, max: usize) -> &mut Self {
-        assert!(
-            max >= proto::h1::MINIMUM_MAX_BUFFER_SIZE,
-            "the max_buf_size cannot be smaller than the minimum that h1 specifies."
-        );
-        self.h1_max_buf_size = Some(max);
-        self.h1_read_buf_exact_size = None;
-        self
+        loop {}
     }
     #[cfg(feature = "ffi")]
     pub(crate) fn http1_headers_raw(&mut self, enabled: bool) -> &mut Self {
-        self.h1_headers_raw = enabled;
-        self
+        loop {}
     }
     /// Sets whether HTTP2 is required.
     ///
@@ -722,10 +629,7 @@ impl Builder {
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_only(&mut self, enabled: bool) -> &mut Builder {
-        if enabled {
-            self.version = Proto::Http2;
-        }
-        self
+        loop {}
     }
     /// Sets the [`SETTINGS_INITIAL_WINDOW_SIZE`][spec] option for HTTP2
     /// stream-level flow control.
@@ -741,11 +645,7 @@ impl Builder {
         &mut self,
         sz: impl Into<Option<u32>>,
     ) -> &mut Self {
-        if let Some(sz) = sz.into() {
-            self.h2_builder.adaptive_window = false;
-            self.h2_builder.initial_stream_window_size = sz;
-        }
-        self
+        loop {}
     }
     /// Sets the max connection-level flow control for HTTP2
     ///
@@ -758,11 +658,7 @@ impl Builder {
         &mut self,
         sz: impl Into<Option<u32>>,
     ) -> &mut Self {
-        if let Some(sz) = sz.into() {
-            self.h2_builder.adaptive_window = false;
-            self.h2_builder.initial_conn_window_size = sz;
-        }
-        self
+        loop {}
     }
     /// Sets whether to use an adaptive flow control.
     ///
@@ -772,13 +668,7 @@ impl Builder {
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_adaptive_window(&mut self, enabled: bool) -> &mut Self {
-        use proto::h2::SPEC_WINDOW_SIZE;
-        self.h2_builder.adaptive_window = enabled;
-        if enabled {
-            self.h2_builder.initial_conn_window_size = SPEC_WINDOW_SIZE;
-            self.h2_builder.initial_stream_window_size = SPEC_WINDOW_SIZE;
-        }
-        self
+        loop {}
     }
     /// Sets the maximum frame size to use for HTTP2.
     ///
@@ -791,10 +681,7 @@ impl Builder {
         &mut self,
         sz: impl Into<Option<u32>>,
     ) -> &mut Self {
-        if let Some(sz) = sz.into() {
-            self.h2_builder.max_frame_size = sz;
-        }
-        self
+        loop {}
     }
     /// Sets an interval for HTTP2 Ping frames should be sent to keep a
     /// connection alive.
@@ -813,8 +700,7 @@ impl Builder {
         &mut self,
         interval: impl Into<Option<Duration>>,
     ) -> &mut Self {
-        self.h2_builder.keep_alive_interval = interval.into();
-        self
+        loop {}
     }
     /// Sets a timeout for receiving an acknowledgement of the keep-alive ping.
     ///
@@ -830,8 +716,7 @@ impl Builder {
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_keep_alive_timeout(&mut self, timeout: Duration) -> &mut Self {
-        self.h2_builder.keep_alive_timeout = timeout;
-        self
+        loop {}
     }
     /// Sets whether HTTP2 keep-alive should apply while the connection is idle.
     ///
@@ -849,8 +734,7 @@ impl Builder {
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_keep_alive_while_idle(&mut self, enabled: bool) -> &mut Self {
-        self.h2_builder.keep_alive_while_idle = enabled;
-        self
+        loop {}
     }
     /// Sets the maximum number of HTTP2 concurrent locally reset streams.
     ///
@@ -866,8 +750,7 @@ impl Builder {
         &mut self,
         max: usize,
     ) -> &mut Self {
-        self.h2_builder.max_concurrent_reset_streams = Some(max);
-        self
+        loop {}
     }
     /// Set the maximum write buffer size for each HTTP/2 stream.
     ///
@@ -879,9 +762,7 @@ impl Builder {
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_max_send_buf_size(&mut self, max: usize) -> &mut Self {
-        assert!(max <= std::u32::MAX as usize);
-        self.h2_builder.max_send_buffer_size = max;
-        self
+        loop {}
     }
     /// Constructs a connection with the configured options and IO.
     /// See [`client::conn`](crate::client::conn) for more.
@@ -957,27 +838,12 @@ impl Builder {
 impl Future for ResponseFuture {
     type Output = crate::Result<Response<Body>>;
     fn poll(mut self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<Self::Output> {
-        match self.inner {
-            ResponseFutureState::Waiting(ref mut rx) => {
-                Pin::new(rx)
-                    .poll(cx)
-                    .map(|res| match res {
-                        Ok(Ok(resp)) => Ok(resp),
-                        Ok(Err(err)) => Err(err),
-                        Err(_canceled) => {
-                            panic!("dispatch dropped without returning error")
-                        }
-                    })
-            }
-            ResponseFutureState::Error(ref mut err) => {
-                Poll::Ready(Err(err.take().expect("polled after ready")))
-            }
-        }
+        loop {}
     }
 }
 impl fmt::Debug for ResponseFuture {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("ResponseFuture").finish()
+        loop {}
     }
 }
 impl<T, B> Future for ProtoClient<T, B>
@@ -989,16 +855,7 @@ where
 {
     type Output = crate::Result<proto::Dispatched>;
     fn poll(self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<Self::Output> {
-        match self.project() {
-            #[cfg(feature = "http1")]
-            ProtoClientProj::H1 { h1 } => h1.poll(cx),
-            #[cfg(feature = "http2")]
-            ProtoClientProj::H2 { h2, .. } => h2.poll(cx),
-            #[cfg(not(feature = "http1"))]
-            ProtoClientProj::H1 { h1 } => match h1.0 {}
-            #[cfg(not(feature = "http2"))]
-            ProtoClientProj::H2 { h2, .. } => match h2.0 {}
-        }
+        loop {}
     }
 }
 trait AssertSend: Send {}

@@ -26,40 +26,36 @@ pub(crate) struct Protocol {
 impl Protocol {
     /// Converts a static string to a protocol name.
     pub(crate) const fn from_static(value: &'static str) -> Self {
-        Self {
-            inner: h2::ext::Protocol::from_static(value),
-        }
+        loop {}
     }
     /// Returns a str representation of the header.
     pub(crate) fn as_str(&self) -> &str {
-        self.inner.as_str()
+        loop {}
     }
     #[cfg(feature = "server")]
     pub(crate) fn from_inner(inner: h2::ext::Protocol) -> Self {
-        Self { inner }
+        loop {}
     }
     pub(crate) fn into_inner(self) -> h2::ext::Protocol {
-        self.inner
+        loop {}
     }
 }
 #[cfg(feature = "http2")]
 impl<'a> From<&'a str> for Protocol {
     fn from(value: &'a str) -> Self {
-        Self {
-            inner: h2::ext::Protocol::from(value),
-        }
+        loop {}
     }
 }
 #[cfg(feature = "http2")]
 impl AsRef<[u8]> for Protocol {
     fn as_ref(&self) -> &[u8] {
-        self.inner.as_ref()
+        loop {}
     }
 }
 #[cfg(feature = "http2")]
 impl fmt::Debug for Protocol {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.inner.fmt(f)
+        loop {}
     }
 }
 /// A map from header names to their original casing as received in an HTTP message.
@@ -101,20 +97,20 @@ impl HeaderCaseMap {
         &'a self,
         name: &HeaderName,
     ) -> ValueIter<'_, Bytes> {
-        self.0.get_all(name).into_iter()
+        loop {}
     }
     pub(crate) fn default() -> Self {
-        Self(Default::default())
+        loop {}
     }
     #[cfg(any(test, feature = "ffi"))]
     pub(crate) fn insert(&mut self, name: HeaderName, orig: Bytes) {
-        self.0.insert(name, orig);
+        loop {}
     }
     pub(crate) fn append<N>(&mut self, name: N, orig: Bytes)
     where
         N: IntoHeaderName,
     {
-        self.0.append(name, orig);
+        loop {}
     }
 }
 #[cfg(feature = "ffi")]
@@ -134,32 +130,16 @@ pub(crate) struct OriginalHeaderOrder {
 #[cfg(all(feature = "http1", feature = "ffi"))]
 impl OriginalHeaderOrder {
     pub(crate) fn default() -> Self {
-        OriginalHeaderOrder {
-            num_entries: HashMap::new(),
-            entry_order: Vec::new(),
-        }
+        loop {}
     }
     pub(crate) fn insert(&mut self, name: HeaderName) {
-        if !self.num_entries.contains_key(&name) {
-            let idx = 0;
-            self.num_entries.insert(name.clone(), 1);
-            self.entry_order.push((name, idx));
-        }
+        loop {}
     }
     pub(crate) fn append<N>(&mut self, name: N)
     where
         N: IntoHeaderName + Into<HeaderName> + Clone,
     {
-        let name: HeaderName = name.into();
-        let idx;
-        if self.num_entries.contains_key(&name) {
-            idx = self.num_entries[&name];
-            *self.num_entries.get_mut(&name).unwrap() += 1;
-        } else {
-            idx = 0;
-            self.num_entries.insert(name.clone(), 1);
-        }
-        self.entry_order.push((name, idx));
+        loop {}
     }
     /// This returns an iterator that provides header names and indexes
     /// in the original order received.
@@ -199,6 +179,6 @@ impl OriginalHeaderOrder {
     /// assert_eq!(b"c=d", h_map.get_all(name).nth(idx).unwrap());
     /// ```
     pub(crate) fn get_in_order(&self) -> impl Iterator<Item = &(HeaderName, usize)> {
-        self.entry_order.iter()
+        loop {}
     }
 }

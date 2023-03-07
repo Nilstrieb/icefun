@@ -95,7 +95,7 @@ pub(crate) struct Parts<T> {
 /// - `&mut http::Request<B>`
 /// - `&mut http::Response<B>`
 pub(crate) fn on<T: sealed::CanUpgrade>(msg: T) -> OnUpgrade {
-    msg.on_upgrade()
+    loop {}
 }
 #[cfg(any(feature = "http1", feature = "http2"))]
 pub(super) struct Pending {
@@ -103,8 +103,7 @@ pub(super) struct Pending {
 }
 #[cfg(any(feature = "http1", feature = "http2"))]
 pub(super) fn pending() -> (Pending, OnUpgrade) {
-    let (tx, rx) = oneshot::channel();
-    (Pending { tx }, OnUpgrade { rx: Some(rx) })
+    loop {}
 }
 impl Upgraded {
     #[cfg(any(feature = "http1", feature = "http2", test))]
@@ -112,9 +111,7 @@ impl Upgraded {
     where
         T: AsyncRead + AsyncWrite + Unpin + Send + 'static,
     {
-        Upgraded {
-            io: Rewind::new_buffered(Box::new(io), read_buf),
-        }
+        loop {}
     }
     /// Tries to downcast the internal trait object to the type passed.
     ///
@@ -123,21 +120,7 @@ impl Upgraded {
     pub(crate) fn downcast<T: AsyncRead + AsyncWrite + Unpin + 'static>(
         self,
     ) -> Result<Parts<T>, Self> {
-        let (io, buf) = self.io.into_inner();
-        match io.__hyper_downcast() {
-            Ok(t) => {
-                Ok(Parts {
-                    io: *t,
-                    read_buf: buf,
-                    _inner: (),
-                })
-            }
-            Err(io) => {
-                Err(Upgraded {
-                    io: Rewind::new_buffered(io, buf),
-                })
-            }
-        }
+        loop {}
     }
 }
 impl AsyncRead for Upgraded {
@@ -146,7 +129,7 @@ impl AsyncRead for Upgraded {
         cx: &mut task::Context<'_>,
         buf: &mut ReadBuf<'_>,
     ) -> Poll<io::Result<()>> {
-        Pin::new(&mut self.io).poll_read(cx, buf)
+        loop {}
     }
 }
 impl AsyncWrite for Upgraded {
@@ -155,81 +138,66 @@ impl AsyncWrite for Upgraded {
         cx: &mut task::Context<'_>,
         buf: &[u8],
     ) -> Poll<io::Result<usize>> {
-        Pin::new(&mut self.io).poll_write(cx, buf)
+        loop {}
     }
     fn poll_write_vectored(
         mut self: Pin<&mut Self>,
         cx: &mut task::Context<'_>,
         bufs: &[io::IoSlice<'_>],
     ) -> Poll<io::Result<usize>> {
-        Pin::new(&mut self.io).poll_write_vectored(cx, bufs)
+        loop {}
     }
     fn poll_flush(
         mut self: Pin<&mut Self>,
         cx: &mut task::Context<'_>,
     ) -> Poll<io::Result<()>> {
-        Pin::new(&mut self.io).poll_flush(cx)
+        loop {}
     }
     fn poll_shutdown(
         mut self: Pin<&mut Self>,
         cx: &mut task::Context<'_>,
     ) -> Poll<io::Result<()>> {
-        Pin::new(&mut self.io).poll_shutdown(cx)
+        loop {}
     }
     fn is_write_vectored(&self) -> bool {
-        self.io.is_write_vectored()
+        loop {}
     }
 }
 impl fmt::Debug for Upgraded {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Upgraded").finish()
+        loop {}
     }
 }
 impl OnUpgrade {
     pub(super) fn none() -> Self {
-        OnUpgrade { rx: None }
+        loop {}
     }
     #[cfg(feature = "http1")]
     pub(super) fn is_none(&self) -> bool {
-        self.rx.is_none()
+        loop {}
     }
 }
 impl Future for OnUpgrade {
     type Output = Result<Upgraded, crate::Error>;
     fn poll(mut self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<Self::Output> {
-        match self.rx {
-            Some(ref mut rx) => {
-                Pin::new(rx)
-                    .poll(cx)
-                    .map(|res| match res {
-                        Ok(Ok(upgraded)) => Ok(upgraded),
-                        Ok(Err(err)) => Err(err),
-                        Err(_oneshot_canceled) => {
-                            Err(crate::Error::new_canceled().with(UpgradeExpected))
-                        }
-                    })
-            }
-            None => Poll::Ready(Err(crate::Error::new_user_no_upgrade())),
-        }
+        loop {}
     }
 }
 impl fmt::Debug for OnUpgrade {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("OnUpgrade").finish()
+        loop {}
     }
 }
 #[cfg(any(feature = "http1", feature = "http2"))]
 impl Pending {
     pub(super) fn fulfill(self, upgraded: Upgraded) {
-        trace!("pending upgrade fulfill");
-        let _ = self.tx.send(Ok(upgraded));
+        loop {}
     }
     #[cfg(feature = "http1")]
     /// Don't fulfill the pending Upgrade, but instead signal that
     /// upgrades are handled manually.
     pub(super) fn manual(self) {
-        trace!("pending upgrade handled manually");
-        let _ = self.tx.send(Err(crate::Error::new_user_manual_upgrade()));
+        loop {}
     }
 }
 /// Error cause returned when an upgrade was expected but canceled
@@ -240,30 +208,22 @@ impl Pending {
 struct UpgradeExpected;
 impl fmt::Display for UpgradeExpected {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("upgrade expected but not completed")
+        loop {}
     }
 }
 impl StdError for UpgradeExpected {}
 pub(super) trait Io: AsyncRead + AsyncWrite + Unpin + 'static {
     fn __hyper_type_id(&self) -> TypeId {
-        TypeId::of::<Self>()
+        loop {}
     }
 }
 impl<T: AsyncRead + AsyncWrite + Unpin + 'static> Io for T {}
 impl dyn Io + Send {
     fn __hyper_is<T: Io>(&self) -> bool {
-        let t = TypeId::of::<T>();
-        self.__hyper_type_id() == t
+        loop {}
     }
     fn __hyper_downcast<T: Io>(self: Box<Self>) -> Result<Box<T>, Box<Self>> {
-        if self.__hyper_is::<T>() {
-            unsafe {
-                let raw: *mut dyn Io = Box::into_raw(self);
-                Ok(Box::from_raw(raw as *mut T))
-            }
-        } else {
-            Err(self)
-        }
+        loop {}
     }
 }
 mod sealed {
@@ -273,22 +233,22 @@ mod sealed {
     }
     impl<B> CanUpgrade for http::Request<B> {
         fn on_upgrade(mut self) -> OnUpgrade {
-            self.extensions_mut().remove::<OnUpgrade>().unwrap_or_else(OnUpgrade::none)
+            loop {}
         }
     }
     impl<B> CanUpgrade for &'_ mut http::Request<B> {
         fn on_upgrade(self) -> OnUpgrade {
-            self.extensions_mut().remove::<OnUpgrade>().unwrap_or_else(OnUpgrade::none)
+            loop {}
         }
     }
     impl<B> CanUpgrade for http::Response<B> {
         fn on_upgrade(mut self) -> OnUpgrade {
-            self.extensions_mut().remove::<OnUpgrade>().unwrap_or_else(OnUpgrade::none)
+            loop {}
         }
     }
     impl<B> CanUpgrade for &'_ mut http::Response<B> {
         fn on_upgrade(self) -> OnUpgrade {
-            self.extensions_mut().remove::<OnUpgrade>().unwrap_or_else(OnUpgrade::none)
+            loop {}
         }
     }
 }
@@ -297,9 +257,7 @@ mod tests {
     use super::*;
     #[test]
     fn upgraded_downcast() {
-        let upgraded = Upgraded::new(Mock, Bytes::new());
-        let upgraded = upgraded.downcast::<std::io::Cursor<Vec<u8>>>().unwrap_err();
-        upgraded.downcast::<Mock>().unwrap();
+        loop {}
     }
     struct Mock;
     impl AsyncRead for Mock {
@@ -308,7 +266,7 @@ mod tests {
             _cx: &mut task::Context<'_>,
             _buf: &mut ReadBuf<'_>,
         ) -> Poll<io::Result<()>> {
-            unreachable!("Mock::poll_read")
+            loop {}
         }
     }
     impl AsyncWrite for Mock {
@@ -317,19 +275,19 @@ mod tests {
             _: &mut task::Context<'_>,
             buf: &[u8],
         ) -> Poll<io::Result<usize>> {
-            Poll::Ready(Ok(buf.len()))
+            loop {}
         }
         fn poll_flush(
             self: Pin<&mut Self>,
             _cx: &mut task::Context<'_>,
         ) -> Poll<io::Result<()>> {
-            unreachable!("Mock::poll_flush")
+            loop {}
         }
         fn poll_shutdown(
             self: Pin<&mut Self>,
             _cx: &mut task::Context<'_>,
         ) -> Poll<io::Result<()>> {
-            unreachable!("Mock::poll_shutdown")
+            loop {}
         }
     }
 }

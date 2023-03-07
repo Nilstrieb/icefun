@@ -54,27 +54,27 @@ pub struct GaiFuture {
 }
 impl Name {
     pub(super) fn new(host: Box<str>) -> Name {
-        Name { host }
+        loop {}
     }
     /// View the hostname as a string slice.
     pub(crate) fn as_str(&self) -> &str {
-        &self.host
+        loop {}
     }
 }
 impl fmt::Debug for Name {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Debug::fmt(&self.host, f)
+        loop {}
     }
 }
 impl fmt::Display for Name {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Display::fmt(&self.host, f)
+        loop {}
     }
 }
 impl FromStr for Name {
     type Err = InvalidNameError;
     fn from_str(host: &str) -> Result<Self, Self::Err> {
-        Ok(Name::new(host.into()))
+        loop {}
     }
 }
 /// Error indicating a given string was not a valid domain name.
@@ -82,14 +82,14 @@ impl FromStr for Name {
 pub struct InvalidNameError(());
 impl fmt::Display for InvalidNameError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("Not a valid domain name")
+        loop {}
     }
 }
 impl Error for InvalidNameError {}
 impl GaiResolver {
     /// Construct a new `GaiResolver`.
     pub(crate) fn new() -> Self {
-        GaiResolver { _priv: () }
+        loop {}
     }
 }
 impl Service<Name> for GaiResolver {
@@ -100,58 +100,42 @@ impl Service<Name> for GaiResolver {
         &mut self,
         _cx: &mut task::Context<'_>,
     ) -> Poll<Result<(), io::Error>> {
-        Poll::Ready(Ok(()))
+        loop {}
     }
     fn call(&mut self, name: Name) -> Self::Future {
-        let blocking = tokio::task::spawn_blocking(move || {
-            debug!("resolving host={:?}", name.host);
-            (&*name.host, 0).to_socket_addrs().map(|i| SocketAddrs { iter: i })
-        });
-        GaiFuture { inner: blocking }
+        loop {}
     }
 }
 impl fmt::Debug for GaiResolver {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.pad("GaiResolver")
+        loop {}
     }
 }
 impl Future for GaiFuture {
     type Output = Result<GaiAddrs, io::Error>;
     fn poll(mut self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<Self::Output> {
-        Pin::new(&mut self.inner)
-            .poll(cx)
-            .map(|res| match res {
-                Ok(Ok(addrs)) => Ok(GaiAddrs { inner: addrs }),
-                Ok(Err(err)) => Err(err),
-                Err(join_err) => {
-                    if join_err.is_cancelled() {
-                        Err(io::Error::new(io::ErrorKind::Interrupted, join_err))
-                    } else {
-                        panic!("gai background task failed: {:?}", join_err)
-                    }
-                }
-            })
+        loop {}
     }
 }
 impl fmt::Debug for GaiFuture {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.pad("GaiFuture")
+        loop {}
     }
 }
 impl Drop for GaiFuture {
     fn drop(&mut self) {
-        self.inner.abort();
+        loop {}
     }
 }
 impl Iterator for GaiAddrs {
     type Item = SocketAddr;
     fn next(&mut self) -> Option<Self::Item> {
-        self.inner.next()
+        loop {}
     }
 }
 impl fmt::Debug for GaiAddrs {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.pad("GaiAddrs")
+        loop {}
     }
 }
 pub(super) struct SocketAddrs {
@@ -159,67 +143,34 @@ pub(super) struct SocketAddrs {
 }
 impl SocketAddrs {
     pub(super) fn new(addrs: Vec<SocketAddr>) -> Self {
-        SocketAddrs {
-            iter: addrs.into_iter(),
-        }
+        loop {}
     }
     pub(super) fn try_parse(host: &str, port: u16) -> Option<SocketAddrs> {
-        if let Ok(addr) = host.parse::<Ipv4Addr>() {
-            let addr = SocketAddrV4::new(addr, port);
-            return Some(SocketAddrs {
-                iter: vec![SocketAddr::V4(addr)].into_iter(),
-            });
-        }
-        if let Ok(addr) = host.parse::<Ipv6Addr>() {
-            let addr = SocketAddrV6::new(addr, port, 0, 0);
-            return Some(SocketAddrs {
-                iter: vec![SocketAddr::V6(addr)].into_iter(),
-            });
-        }
-        None
+        loop {}
     }
     #[inline]
     fn filter(self, predicate: impl FnMut(&SocketAddr) -> bool) -> SocketAddrs {
-        SocketAddrs::new(self.iter.filter(predicate).collect())
+        loop {}
     }
     pub(super) fn split_by_preference(
         self,
         local_addr_ipv4: Option<Ipv4Addr>,
         local_addr_ipv6: Option<Ipv6Addr>,
     ) -> (SocketAddrs, SocketAddrs) {
-        match (local_addr_ipv4, local_addr_ipv6) {
-            (Some(_), None) => {
-                (self.filter(SocketAddr::is_ipv4), SocketAddrs::new(vec![]))
-            }
-            (None, Some(_)) => {
-                (self.filter(SocketAddr::is_ipv6), SocketAddrs::new(vec![]))
-            }
-            _ => {
-                let preferring_v6 = self
-                    .iter
-                    .as_slice()
-                    .first()
-                    .map(SocketAddr::is_ipv6)
-                    .unwrap_or(false);
-                let (preferred, fallback) = self
-                    .iter
-                    .partition::<Vec<_>, _>(|addr| addr.is_ipv6() == preferring_v6);
-                (SocketAddrs::new(preferred), SocketAddrs::new(fallback))
-            }
-        }
+        loop {}
     }
     pub(super) fn is_empty(&self) -> bool {
-        self.iter.as_slice().is_empty()
+        loop {}
     }
     pub(super) fn len(&self) -> usize {
-        self.iter.as_slice().len()
+        loop {}
     }
 }
 impl Iterator for SocketAddrs {
     type Item = SocketAddr;
     #[inline]
     fn next(&mut self) -> Option<SocketAddr> {
-        self.iter.next()
+        loop {}
     }
 }
 mod sealed {
@@ -249,10 +200,10 @@ mod sealed {
             &mut self,
             cx: &mut task::Context<'_>,
         ) -> Poll<Result<(), Self::Error>> {
-            Service::poll_ready(self, cx)
+            loop {}
         }
         fn resolve(&mut self, name: Name) -> Self::Future {
-            Service::call(self, name)
+            loop {}
         }
     }
 }
@@ -263,8 +214,7 @@ pub(super) async fn resolve<R>(
 where
     R: Resolve,
 {
-    futures_util::future::poll_fn(|cx| resolver.poll_ready(cx)).await?;
-    resolver.resolve(name).await
+    loop {}
 }
 #[cfg(test)]
 mod tests {
@@ -272,52 +222,10 @@ mod tests {
     use std::net::{Ipv4Addr, Ipv6Addr};
     #[test]
     fn test_ip_addrs_split_by_preference() {
-        let ip_v4 = Ipv4Addr::new(127, 0, 0, 1);
-        let ip_v6 = Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1);
-        let v4_addr = (ip_v4, 80).into();
-        let v6_addr = (ip_v6, 80).into();
-        let (mut preferred, mut fallback) = SocketAddrs {
-            iter: vec![v4_addr, v6_addr].into_iter(),
-        }
-            .split_by_preference(None, None);
-        assert!(preferred.next().unwrap().is_ipv4());
-        assert!(fallback.next().unwrap().is_ipv6());
-        let (mut preferred, mut fallback) = SocketAddrs {
-            iter: vec![v6_addr, v4_addr].into_iter(),
-        }
-            .split_by_preference(None, None);
-        assert!(preferred.next().unwrap().is_ipv6());
-        assert!(fallback.next().unwrap().is_ipv4());
-        let (mut preferred, mut fallback) = SocketAddrs {
-            iter: vec![v4_addr, v6_addr].into_iter(),
-        }
-            .split_by_preference(Some(ip_v4), Some(ip_v6));
-        assert!(preferred.next().unwrap().is_ipv4());
-        assert!(fallback.next().unwrap().is_ipv6());
-        let (mut preferred, mut fallback) = SocketAddrs {
-            iter: vec![v6_addr, v4_addr].into_iter(),
-        }
-            .split_by_preference(Some(ip_v4), Some(ip_v6));
-        assert!(preferred.next().unwrap().is_ipv6());
-        assert!(fallback.next().unwrap().is_ipv4());
-        let (mut preferred, fallback) = SocketAddrs {
-            iter: vec![v4_addr, v6_addr].into_iter(),
-        }
-            .split_by_preference(Some(ip_v4), None);
-        assert!(preferred.next().unwrap().is_ipv4());
-        assert!(fallback.is_empty());
-        let (mut preferred, fallback) = SocketAddrs {
-            iter: vec![v4_addr, v6_addr].into_iter(),
-        }
-            .split_by_preference(None, Some(ip_v6));
-        assert!(preferred.next().unwrap().is_ipv6());
-        assert!(fallback.is_empty());
+        loop {}
     }
     #[test]
     fn test_name_from_str() {
-        const DOMAIN: &str = "test.example.com";
-        let name = Name::from_str(DOMAIN).expect("Should be a valid domain");
-        assert_eq!(name.as_str(), DOMAIN);
-        assert_eq!(name.to_string(), DOMAIN);
+        loop {}
     }
 }

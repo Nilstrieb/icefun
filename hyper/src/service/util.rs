@@ -1,11 +1,9 @@
 use std::error::Error as StdError;
 use std::fmt;
 use std::marker::PhantomData;
-
 use crate::body::HttpBody;
 use crate::common::{task, Future, Poll};
 use crate::{Request, Response};
-
 /// Create a `Service` from a function.
 ///
 /// # Example
@@ -29,20 +27,15 @@ where
     F: FnMut(Request<R>) -> S,
     S: Future,
 {
-    ServiceFn {
-        f,
-        _req: PhantomData,
-    }
+    loop {}
 }
-
 /// Service returned by [`service_fn`]
 pub struct ServiceFn<F, R> {
     f: F,
     _req: PhantomData<fn(R)>,
 }
-
 impl<F, ReqBody, Ret, ResBody, E> tower_service::Service<crate::Request<ReqBody>>
-    for ServiceFn<F, ReqBody>
+for ServiceFn<F, ReqBody>
 where
     F: FnMut(Request<ReqBody>) -> Ret,
     ReqBody: HttpBody,
@@ -53,32 +46,30 @@ where
     type Response = crate::Response<ResBody>;
     type Error = E;
     type Future = Ret;
-
-    fn poll_ready(&mut self, _cx: &mut task::Context<'_>) -> Poll<Result<(), Self::Error>> {
-        Poll::Ready(Ok(()))
+    fn poll_ready(
+        &mut self,
+        _cx: &mut task::Context<'_>,
+    ) -> Poll<Result<(), Self::Error>> {
+        loop {}
     }
-
     fn call(&mut self, req: Request<ReqBody>) -> Self::Future {
-        (self.f)(req)
+        loop {}
     }
 }
-
 impl<F, R> fmt::Debug for ServiceFn<F, R> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("impl Service").finish()
+        loop {}
     }
 }
-
 impl<F, R> Clone for ServiceFn<F, R>
 where
     F: Clone,
 {
     fn clone(&self) -> Self {
-        ServiceFn {
-            f: self.f.clone(),
-            _req: PhantomData,
-        }
+        loop {}
     }
 }
-
-impl<F, R> Copy for ServiceFn<F, R> where F: Copy {}
+impl<F, R> Copy for ServiceFn<F, R>
+where
+    F: Copy,
+{}

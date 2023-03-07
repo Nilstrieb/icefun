@@ -1,7 +1,3 @@
-/*
- * This is a copy of the sync_wrapper crate.
- */
-
 /// A mutual exclusion primitive that relies on static type information only
 ///
 /// In some cases synchronization can be proven statically: whenever you hold an exclusive `&mut`
@@ -42,7 +38,6 @@
 /// [`Sync`]: https://doc.rust-lang.org/std/marker/trait.Sync.html
 #[repr(transparent)]
 pub(crate) struct SyncWrapper<T>(T);
-
 impl<T> SyncWrapper<T> {
     /// Creates a new SyncWrapper containing the given value.
     ///
@@ -54,9 +49,8 @@ impl<T> SyncWrapper<T> {
     /// let wrapped = SyncWrapper::new(42);
     /// ```
     pub(crate) fn new(value: T) -> Self {
-        Self(value)
+        loop {}
     }
-
     /// Acquires a reference to the protected value.
     ///
     /// This is safe because it requires an exclusive reference to the wrapper. Therefore this method
@@ -78,9 +72,8 @@ impl<T> SyncWrapper<T> {
     /// assert_eq!(*wrapped.get_mut(), 0);
     /// ```
     pub(crate) fn get_mut(&mut self) -> &mut T {
-        &mut self.0
+        loop {}
     }
-
     /// Consumes this wrapper, returning the underlying data.
     ///
     /// This is safe because it requires ownership of the wrapper, aherefore this method will neither
@@ -101,10 +94,7 @@ impl<T> SyncWrapper<T> {
     /// ```
     #[allow(dead_code)]
     pub(crate) fn into_inner(self) -> T {
-        self.0
+        loop {}
     }
 }
-
-// this is safe because the only operations permitted on this data structure require exclusive
-// access or ownership
 unsafe impl<T: Send> Sync for SyncWrapper<T> {}

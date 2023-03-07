@@ -112,11 +112,7 @@ pub(super) enum Alpn {
 impl Connected {
     /// Create new `Connected` type with empty metadata.
     pub(crate) fn new() -> Connected {
-        Connected {
-            alpn: Alpn::None,
-            is_proxied: false,
-            extra: None,
-        }
+        loop {}
     }
     /// Set whether the connected transport is to an HTTP proxy.
     ///
@@ -137,62 +133,49 @@ impl Connected {
     ///
     /// Default is `false`.
     pub(crate) fn proxy(mut self, is_proxied: bool) -> Connected {
-        self.is_proxied = is_proxied;
-        self
+        loop {}
     }
     /// Determines if the connected transport is to an HTTP proxy.
     pub(crate) fn is_proxied(&self) -> bool {
-        self.is_proxied
+        loop {}
     }
     /// Set extra connection information to be set in the extensions of every `Response`.
     pub(crate) fn extra<T: Clone + Send + Sync + 'static>(
         mut self,
         extra: T,
     ) -> Connected {
-        if let Some(prev) = self.extra {
-            self.extra = Some(Extra(Box::new(ExtraChain(prev.0, extra))));
-        } else {
-            self.extra = Some(Extra(Box::new(ExtraEnvelope(extra))));
-        }
-        self
+        loop {}
     }
     /// Copies the extra connection information into an `Extensions` map.
     pub(crate) fn get_extras(&self, extensions: &mut Extensions) {
-        if let Some(extra) = &self.extra {
-            extra.set(extensions);
-        }
+        loop {}
     }
     /// Set that the connected transport negotiated HTTP/2 as its next protocol.
     pub(crate) fn negotiated_h2(mut self) -> Connected {
-        self.alpn = Alpn::H2;
-        self
+        loop {}
     }
     /// Determines if the connected transport negotiated HTTP/2 as its next protocol.
     pub(crate) fn is_negotiated_h2(&self) -> bool {
-        self.alpn == Alpn::H2
+        loop {}
     }
     #[cfg(feature = "http2")]
     pub(super) fn clone(&self) -> Connected {
-        Connected {
-            alpn: self.alpn.clone(),
-            is_proxied: self.is_proxied,
-            extra: self.extra.clone(),
-        }
+        loop {}
     }
 }
 impl Extra {
     pub(super) fn set(&self, res: &mut Extensions) {
-        self.0.set(res);
+        loop {}
     }
 }
 impl Clone for Extra {
     fn clone(&self) -> Extra {
-        Extra(self.0.clone_box())
+        loop {}
     }
 }
 impl fmt::Debug for Extra {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Extra").finish()
+        loop {}
     }
 }
 trait ExtraInner: Send + Sync {
@@ -206,16 +189,16 @@ where
     T: Clone + Send + Sync + 'static,
 {
     fn clone_box(&self) -> Box<dyn ExtraInner> {
-        Box::new(self.clone())
+        loop {}
     }
     fn set(&self, res: &mut Extensions) {
-        res.insert(self.0.clone());
+        loop {}
     }
 }
 struct ExtraChain<T>(Box<dyn ExtraInner>, T);
 impl<T: Clone> Clone for ExtraChain<T> {
     fn clone(&self) -> Self {
-        ExtraChain(self.0.clone_box(), self.1.clone())
+        loop {}
     }
 }
 impl<T> ExtraInner for ExtraChain<T>
@@ -223,11 +206,10 @@ where
     T: Clone + Send + Sync + 'static,
 {
     fn clone_box(&self) -> Box<dyn ExtraInner> {
-        Box::new(self.clone())
+        loop {}
     }
     fn set(&self, res: &mut Extensions) {
-        self.0.set(res);
-        res.insert(self.1.clone());
+        loop {}
     }
 }
 #[cfg(any(feature = "http1", feature = "http2"))]
@@ -275,7 +257,7 @@ pub(super) mod sealed {
     {
         type _Svc = S;
         fn connect(self, _: Internal, dst: Uri) -> crate::service::Oneshot<S, Uri> {
-            crate::service::oneshot(self, dst)
+            loop {}
         }
     }
     impl<S, T> ConnectSvc for S
@@ -289,7 +271,7 @@ pub(super) mod sealed {
         type Error = S::Error;
         type Future = crate::service::Oneshot<S, Uri>;
         fn connect(self, _: Internal, dst: Uri) -> Self::Future {
-            crate::service::oneshot(self, dst)
+            loop {}
         }
     }
     impl<S, T> Sealed for S
@@ -314,30 +296,10 @@ mod tests {
     struct Ex3(&'static str);
     #[test]
     fn test_connected_extra() {
-        let c1 = Connected::new().extra(Ex1(41));
-        let mut ex = ::http::Extensions::new();
-        assert_eq!(ex.get::< Ex1 > (), None);
-        c1.extra.as_ref().expect("c1 extra").set(&mut ex);
-        assert_eq!(ex.get::< Ex1 > (), Some(& Ex1(41)));
+        loop {}
     }
     #[test]
     fn test_connected_extra_chain() {
-        let c1 = Connected::new()
-            .extra(Ex1(45))
-            .extra(Ex2("zoom"))
-            .extra(Ex3("pew pew"));
-        let mut ex1 = ::http::Extensions::new();
-        assert_eq!(ex1.get::< Ex1 > (), None);
-        assert_eq!(ex1.get::< Ex2 > (), None);
-        assert_eq!(ex1.get::< Ex3 > (), None);
-        c1.extra.as_ref().expect("c1 extra").set(&mut ex1);
-        assert_eq!(ex1.get::< Ex1 > (), Some(& Ex1(45)));
-        assert_eq!(ex1.get::< Ex2 > (), Some(& Ex2("zoom")));
-        assert_eq!(ex1.get::< Ex3 > (), Some(& Ex3("pew pew")));
-        let c2 = Connected::new().extra(Ex1(33)).extra(Ex2("hiccup")).extra(Ex1(99));
-        let mut ex2 = ::http::Extensions::new();
-        c2.extra.as_ref().expect("c2 extra").set(&mut ex2);
-        assert_eq!(ex2.get::< Ex1 > (), Some(& Ex1(99)));
-        assert_eq!(ex2.get::< Ex2 > (), Some(& Ex2("hiccup")));
+        loop {}
     }
 }

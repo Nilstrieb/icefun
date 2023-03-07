@@ -32,23 +32,12 @@ impl Exec {
     where
         F: Future<Output = ()> + Send + 'static,
     {
-        match *self {
-            Exec::Default => {
-                #[cfg(feature = "tcp")]
-                {
-                    tokio::task::spawn(fut);
-                }
-                #[cfg(not(feature = "tcp"))] { panic!("executor must be set") }
-            }
-            Exec::Executor(ref e) => {
-                e.execute(Box::pin(fut));
-            }
-        }
+        loop {}
     }
 }
 impl fmt::Debug for Exec {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Exec").finish()
+        loop {}
     }
 }
 #[cfg(feature = "server")]
@@ -58,7 +47,7 @@ where
     B: HttpBody,
 {
     fn execute_h2stream(&mut self, fut: H2Stream<F, B>) {
-        self.execute(fut)
+        loop {}
     }
 }
 #[cfg(all(feature = "server", any(feature = "http1", feature = "http2")))]
@@ -80,7 +69,7 @@ where
     B: HttpBody,
 {
     fn execute_h2stream(&mut self, fut: H2Stream<F, B>) {
-        self.execute(fut)
+        loop {}
     }
 }
 #[cfg(all(feature = "server", any(feature = "http1", feature = "http2")))]
@@ -111,6 +100,6 @@ where
         self: Pin<&mut Self>,
         _cx: &mut std::task::Context<'_>,
     ) -> std::task::Poll<Self::Output> {
-        unreachable!()
+        loop {}
     }
 }

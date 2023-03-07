@@ -39,10 +39,7 @@ pub struct Builder<I, E = Exec> {
 impl<I> Server<I, ()> {
     /// Starts a [`Builder`](Builder) with the provided incoming stream.
     pub fn builder(incoming: I) -> Builder<I> {
-        Builder {
-            incoming,
-            protocol: Http_::new(),
-        }
+        loop {}
     }
 }
 #[cfg(feature = "tcp")]
@@ -62,13 +59,13 @@ impl Server<AddrIncoming, ()> {
     }
     /// Tries to bind to the provided address, and returns a [`Builder`](Builder).
     pub(crate) fn try_bind(addr: &SocketAddr) -> crate::Result<Builder<AddrIncoming>> {
-        AddrIncoming::new(addr).map(Server::builder)
+        loop {}
     }
     /// Create a new instance from a `std::net::TcpListener` instance.
     pub(crate) fn from_tcp(
         listener: StdTcpListener,
     ) -> Result<Builder<AddrIncoming>, crate::Error> {
-        AddrIncoming::from_std(listener).map(Server::builder)
+        loop {}
     }
 }
 #[cfg(feature = "tcp")]
@@ -79,7 +76,7 @@ impl Server<AddrIncoming, ()> {
 impl<S, E> Server<AddrIncoming, S, E> {
     /// Returns the local address that this server is bound to.
     pub(crate) fn local_addr(&self) -> SocketAddr {
-        self.incoming.local_addr()
+        loop {}
     }
 }
 #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
@@ -135,35 +132,13 @@ where
         F: Future<Output = ()>,
         E: NewSvcExec<IO, S::Future, S::Service, E, GracefulWatcher>,
     {
-        Graceful::new(self, signal)
+        loop {}
     }
     fn poll_next_(
         self: Pin<&mut Self>,
         cx: &mut task::Context<'_>,
     ) -> Poll<Option<crate::Result<Connecting<IO, S::Future, E>>>> {
-        let me = self.project();
-        match ready!(me.make_service.poll_ready_ref(cx)) {
-            Ok(()) => {}
-            Err(e) => {
-                trace!("make_service closed");
-                return Poll::Ready(Some(Err(crate::Error::new_user_make_service(e))));
-            }
-        }
-        if let Some(item) = ready!(me.incoming.poll_accept(cx)) {
-            let io = item.map_err(crate::Error::new_accept)?;
-            let new_fut = me.make_service.make_service_ref(&io);
-            Poll::Ready(
-                Some(
-                    Ok(Connecting {
-                        future: new_fut,
-                        io: Some(io),
-                        protocol: me.protocol.clone(),
-                    }),
-                ),
-            )
-        } else {
-            Poll::Ready(None)
-        }
+        loop {}
     }
     pub(super) fn poll_watch<W>(
         mut self: Pin<&mut Self>,
@@ -174,14 +149,7 @@ where
         E: NewSvcExec<IO, S::Future, S::Service, E, W>,
         W: Watcher<IO, S::Service, E>,
     {
-        loop {
-            if let Some(connecting) = ready!(self.as_mut().poll_next_(cx) ?) {
-                let fut = NewSvcTask::new(connecting, watcher.clone());
-                self.as_mut().project().protocol.exec.execute_new_svc(fut);
-            } else {
-                return Poll::Ready(Ok(()));
-            }
-        }
+        loop {}
     }
 }
 #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
@@ -211,9 +179,7 @@ where
 }
 impl<I: fmt::Debug, S: fmt::Debug> fmt::Debug for Server<I, S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut st = f.debug_struct("Server");
-        st.field("listener", &self.incoming);
-        st.finish()
+        loop {}
     }
 }
 #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
@@ -222,7 +188,7 @@ impl<I, E> Builder<I, E> {
     ///
     /// For a more convenient constructor, see [`Server::bind`](Server::bind).
     pub(crate) fn new(incoming: I, protocol: Http_<E>) -> Self {
-        Builder { incoming, protocol }
+        loop {}
     }
     /// Sets whether to use keep-alive for HTTP/1 connections.
     ///
@@ -230,8 +196,7 @@ impl<I, E> Builder<I, E> {
     #[cfg(feature = "http1")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http1")))]
     pub(crate) fn http1_keepalive(mut self, val: bool) -> Self {
-        self.protocol.http1_keep_alive(val);
-        self
+        loop {}
     }
     /// Set whether HTTP/1 connections should support half-closures.
     ///
@@ -244,8 +209,7 @@ impl<I, E> Builder<I, E> {
     #[cfg(feature = "http1")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http1")))]
     pub(crate) fn http1_half_close(mut self, val: bool) -> Self {
-        self.protocol.http1_half_close(val);
-        self
+        loop {}
     }
     /// Set the maximum buffer size.
     ///
@@ -253,14 +217,12 @@ impl<I, E> Builder<I, E> {
     #[cfg(feature = "http1")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http1")))]
     pub(crate) fn http1_max_buf_size(mut self, val: usize) -> Self {
-        self.protocol.max_buf_size(val);
-        self
+        loop {}
     }
     #[doc(hidden)]
     #[cfg(feature = "http1")]
     pub fn http1_pipeline_flush(mut self, val: bool) -> Self {
-        self.protocol.pipeline_flush(val);
-        self
+        loop {}
     }
     /// Set whether HTTP/1 connections should try to use vectored writes,
     /// or always flatten into a single buffer.
@@ -276,8 +238,7 @@ impl<I, E> Builder<I, E> {
     /// mode to use
     #[cfg(feature = "http1")]
     pub(crate) fn http1_writev(mut self, enabled: bool) -> Self {
-        self.protocol.http1_writev(enabled);
-        self
+        loop {}
     }
     /// Set whether HTTP/1 connections will write header names as title case at
     /// the socket level.
@@ -288,8 +249,7 @@ impl<I, E> Builder<I, E> {
     #[cfg(feature = "http1")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http1")))]
     pub(crate) fn http1_title_case_headers(mut self, val: bool) -> Self {
-        self.protocol.http1_title_case_headers(val);
-        self
+        loop {}
     }
     /// Set whether to support preserving original header cases.
     ///
@@ -307,8 +267,7 @@ impl<I, E> Builder<I, E> {
     #[cfg(feature = "http1")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http1")))]
     pub(crate) fn http1_preserve_header_case(mut self, val: bool) -> Self {
-        self.protocol.http1_preserve_header_case(val);
-        self
+        loop {}
     }
     /// Set a timeout for reading client request headers. If a client does not
     /// transmit the entire header within this time, the connection is closed.
@@ -317,8 +276,7 @@ impl<I, E> Builder<I, E> {
     #[cfg(all(feature = "http1", feature = "runtime"))]
     #[cfg_attr(docsrs, doc(cfg(all(feature = "http1", feature = "runtime"))))]
     pub(crate) fn http1_header_read_timeout(mut self, read_timeout: Duration) -> Self {
-        self.protocol.http1_header_read_timeout(read_timeout);
-        self
+        loop {}
     }
     /// Sets whether HTTP/1 is required.
     ///
@@ -326,8 +284,7 @@ impl<I, E> Builder<I, E> {
     #[cfg(feature = "http1")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http1")))]
     pub(crate) fn http1_only(mut self, val: bool) -> Self {
-        self.protocol.http1_only(val);
-        self
+        loop {}
     }
     /// Sets whether HTTP/2 is required.
     ///
@@ -335,8 +292,7 @@ impl<I, E> Builder<I, E> {
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_only(mut self, val: bool) -> Self {
-        self.protocol.http2_only(val);
-        self
+        loop {}
     }
     /// Sets the [`SETTINGS_INITIAL_WINDOW_SIZE`][spec] option for HTTP2
     /// stream-level flow control.
@@ -352,8 +308,7 @@ impl<I, E> Builder<I, E> {
         mut self,
         sz: impl Into<Option<u32>>,
     ) -> Self {
-        self.protocol.http2_initial_stream_window_size(sz.into());
-        self
+        loop {}
     }
     /// Sets the max connection-level flow control for HTTP2
     ///
@@ -366,8 +321,7 @@ impl<I, E> Builder<I, E> {
         mut self,
         sz: impl Into<Option<u32>>,
     ) -> Self {
-        self.protocol.http2_initial_connection_window_size(sz.into());
-        self
+        loop {}
     }
     /// Sets whether to use an adaptive flow control.
     ///
@@ -377,8 +331,7 @@ impl<I, E> Builder<I, E> {
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_adaptive_window(mut self, enabled: bool) -> Self {
-        self.protocol.http2_adaptive_window(enabled);
-        self
+        loop {}
     }
     /// Sets the maximum frame size to use for HTTP2.
     ///
@@ -388,8 +341,7 @@ impl<I, E> Builder<I, E> {
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_max_frame_size(mut self, sz: impl Into<Option<u32>>) -> Self {
-        self.protocol.http2_max_frame_size(sz);
-        self
+        loop {}
     }
     /// Sets the max size of received header frames.
     ///
@@ -397,8 +349,7 @@ impl<I, E> Builder<I, E> {
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_max_header_list_size(mut self, max: u32) -> Self {
-        self.protocol.http2_max_header_list_size(max);
-        self
+        loop {}
     }
     /// Sets the [`SETTINGS_MAX_CONCURRENT_STREAMS`][spec] option for HTTP2
     /// connections.
@@ -412,8 +363,7 @@ impl<I, E> Builder<I, E> {
         mut self,
         max: impl Into<Option<u32>>,
     ) -> Self {
-        self.protocol.http2_max_concurrent_streams(max.into());
-        self
+        loop {}
     }
     /// Set the maximum write buffer size for each HTTP/2 stream.
     ///
@@ -425,25 +375,20 @@ impl<I, E> Builder<I, E> {
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_max_send_buf_size(mut self, max: usize) -> Self {
-        self.protocol.http2_max_send_buf_size(max);
-        self
+        loop {}
     }
     /// Enables the [extended CONNECT protocol].
     ///
     /// [extended CONNECT protocol]: https://datatracker.ietf.org/doc/html/rfc8441#section-4
     #[cfg(feature = "http2")]
     pub(crate) fn http2_enable_connect_protocol(mut self) -> Self {
-        self.protocol.http2_enable_connect_protocol();
-        self
+        loop {}
     }
     /// Sets the `Executor` to deal with connection tasks.
     ///
     /// Default is `tokio::spawn`.
     pub(crate) fn executor<E2>(self, executor: E2) -> Builder<I, E2> {
-        Builder {
-            incoming: self.incoming,
-            protocol: self.protocol.with_executor(executor),
-        }
+        loop {}
     }
     ///
     pub fn serve<S, B>(self, _: S) -> Server<I, S>
@@ -465,24 +410,20 @@ impl<E> Builder<AddrIncoming, E> {
     ///
     /// If `None` is specified, keepalive is disabled.
     pub(crate) fn tcp_keepalive(mut self, keepalive: Option<Duration>) -> Self {
-        self.incoming.set_keepalive(keepalive);
-        self
+        loop {}
     }
     /// Set the duration between two successive TCP keepalive retransmissions,
     /// if acknowledgement to the previous keepalive transmission is not received.
     pub(crate) fn tcp_keepalive_interval(mut self, interval: Option<Duration>) -> Self {
-        self.incoming.set_keepalive_interval(interval);
-        self
+        loop {}
     }
     /// Set the number of retransmissions to be carried out before declaring that remote end is not available.
     pub(crate) fn tcp_keepalive_retries(mut self, retries: Option<u32>) -> Self {
-        self.incoming.set_keepalive_retries(retries);
-        self
+        loop {}
     }
     /// Set the value of `TCP_NODELAY` option for accepted connections.
     pub(crate) fn tcp_nodelay(mut self, enabled: bool) -> Self {
-        self.incoming.set_nodelay(enabled);
-        self
+        loop {}
     }
     /// Set whether to sleep on accept errors.
     ///
@@ -500,8 +441,7 @@ impl<E> Builder<AddrIncoming, E> {
     ///
     /// For more details see [`AddrIncoming::set_sleep_on_errors`]
     pub(crate) fn tcp_sleep_on_accept_errors(mut self, val: bool) -> Self {
-        self.incoming.set_sleep_on_errors(val);
-        self
+        loop {}
     }
 }
 pub trait Watcher<I, S: HttpService<Body>, E>: Clone {
@@ -521,7 +461,7 @@ where
 {
     type Future = UpgradeableConnection<I, S, E>;
     fn watch(&self, conn: UpgradeableConnection<I, S, E>) -> Self::Future {
-        conn
+        loop {}
     }
 }
 pub(crate) mod new_svc {
@@ -546,12 +486,7 @@ pub(crate) mod new_svc {
     }
     impl<I, N, S: HttpService<Body>, E, W: Watcher<I, S, E>> NewSvcTask<I, N, S, E, W> {
         pub(super) fn new(connecting: Connecting<I, N, E>, watcher: W) -> Self {
-            NewSvcTask {
-                state: State::Connecting {
-                    connecting,
-                    watcher,
-                },
-            }
+            loop {}
         }
     }
     impl<I, N, S, NE, B, E, W> Future for NewSvcTask<I, N, S, E, W>
@@ -590,9 +525,6 @@ where
 {
     type Output = Result<Connection<I, S, E>, FE>;
     fn poll(self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<Self::Output> {
-        let mut me = self.project();
-        let service = ready!(me.future.poll(cx))?;
-        let io = Option::take(&mut me.io).expect("polled after complete");
-        Poll::Ready(Ok(me.protocol.serve_connection(io, service)))
+        loop {}
     }
 }

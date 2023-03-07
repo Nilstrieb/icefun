@@ -59,13 +59,13 @@ impl Client<HttpConnector, Body> {
     #[cfg_attr(docsrs, doc(cfg(feature = "tcp")))]
     #[inline]
     pub(crate) fn new() -> Client<HttpConnector, Body> {
-        Builder::default().build_http()
+        loop {}
     }
 }
 #[cfg(feature = "tcp")]
 impl Default for Client<HttpConnector, Body> {
     fn default() -> Client<HttpConnector, Body> {
-        Client::new()
+        loop {}
     }
 }
 impl Client<(), Body> {
@@ -90,7 +90,7 @@ impl Client<(), Body> {
     /// ```
     #[inline]
     pub(crate) fn builder() -> Builder {
-        Builder::default()
+        loop {}
     }
 }
 impl<C, B> Client<C, B>
@@ -125,15 +125,7 @@ where
     where
         B: Default,
     {
-        let body = B::default();
-        if !body.is_end_stream() {
-            warn!(
-                "default HttpBody used for get() does not return true for is_end_stream"
-            );
-        }
-        let mut req = Request::new(body);
-        *req.uri_mut() = uri;
-        self.request(req)
+        loop {}
     }
     /// Send a constructed `Request` using this `Client`.
     ///
@@ -157,175 +149,27 @@ where
     /// # fn main() {}
     /// ```
     pub(crate) fn request(&self, mut req: Request<B>) -> ResponseFuture {
-        let is_http_connect = req.method() == Method::CONNECT;
-        match req.version() {
-            Version::HTTP_11 => {}
-            Version::HTTP_10 => {
-                if is_http_connect {
-                    warn!("CONNECT is not allowed for HTTP/1.0");
-                    return ResponseFuture::new(
-                        future::err(crate::Error::new_user_unsupported_request_method()),
-                    );
-                }
-            }
-            Version::HTTP_2 => {}
-            other => return ResponseFuture::error_version(other),
-        };
-        let pool_key = match extract_domain(req.uri_mut(), is_http_connect) {
-            Ok(s) => s,
-            Err(err) => {
-                return ResponseFuture::new(future::err(err));
-            }
-        };
-        ResponseFuture::new(self.clone().retryably_send_request(req, pool_key))
+        loop {}
     }
     async fn retryably_send_request(
         self,
         mut req: Request<B>,
         pool_key: PoolKey,
     ) -> crate::Result<Response<Body>> {
-        let uri = req.uri().clone();
-        loop {
-            req = match self.send_request(req, pool_key.clone()).await {
-                Ok(resp) => return Ok(resp),
-                Err(ClientError::Normal(err)) => return Err(err),
-                Err(ClientError::Canceled { connection_reused, mut req, reason }) => {
-                    if !self.config.retry_canceled_requests || !connection_reused {
-                        return Err(reason);
-                    }
-                    trace!(
-                        "unstarted request canceled, trying again (reason={:?})", reason
-                    );
-                    *req.uri_mut() = uri.clone();
-                    req
-                }
-            };
-        }
+        loop {}
     }
     async fn send_request(
         &self,
         mut req: Request<B>,
         pool_key: PoolKey,
     ) -> Result<Response<Body>, ClientError<B>> {
-        let mut pooled = match self.connection_for(pool_key).await {
-            Ok(pooled) => pooled,
-            Err(ClientConnectError::Normal(err)) => return Err(ClientError::Normal(err)),
-            Err(ClientConnectError::H2CheckoutIsClosed(reason)) => {
-                return Err(ClientError::Canceled {
-                    connection_reused: true,
-                    req,
-                    reason,
-                });
-            }
-        };
-        if pooled.is_http1() {
-            if req.version() == Version::HTTP_2 {
-                warn!("Connection is HTTP/1, but request requires HTTP/2");
-                return Err(
-                    ClientError::Normal(crate::Error::new_user_unsupported_version()),
-                );
-            }
-            if self.config.set_host {
-                let uri = req.uri().clone();
-                req.headers_mut()
-                    .entry(HOST)
-                    .or_insert_with(|| {
-                        let hostname = uri.host().expect("authority implies host");
-                        if let Some(port) = get_non_default_port(&uri) {
-                            let s = format!("{}:{}", hostname, port);
-                            HeaderValue::from_str(&s)
-                        } else {
-                            HeaderValue::from_str(hostname)
-                        }
-                            .expect("uri host is valid header value")
-                    });
-            }
-            if req.method() == Method::CONNECT {
-                authority_form(req.uri_mut());
-            } else if pooled.conn_info.is_proxied {
-                absolute_form(req.uri_mut());
-            } else {
-                origin_form(req.uri_mut());
-            }
-        } else if req.method() == Method::CONNECT {
-            authority_form(req.uri_mut());
-        }
-        let fut = pooled
-            .send_request_retryable(req)
-            .map_err(ClientError::map_with_reused(pooled.is_reused()));
-        let extra_info = pooled.conn_info.extra.clone();
-        let fut = fut
-            .map_ok(move |mut res| {
-                if let Some(extra) = extra_info {
-                    extra.set(res.extensions_mut());
-                }
-                res
-            });
-        if pooled.is_closed() {
-            return fut.await;
-        }
-        let mut res = fut.await?;
-        if pooled.is_http2() || !pooled.is_pool_enabled() || pooled.is_ready() {
-            drop(pooled);
-        } else if !res.body().is_end_stream() {
-            let (delayed_tx, delayed_rx) = oneshot::channel();
-            res.body_mut().delayed_eof(delayed_rx);
-            let on_idle = future::poll_fn(move |cx| pooled.poll_ready(cx))
-                .map(move |_| {
-                    drop(delayed_tx);
-                });
-            self.conn_builder.exec.execute(on_idle);
-        } else {
-            let on_idle = future::poll_fn(move |cx| pooled.poll_ready(cx)).map(|_| ());
-            self.conn_builder.exec.execute(on_idle);
-        }
-        Ok(res)
+        loop {}
     }
     async fn connection_for(
         &self,
         pool_key: PoolKey,
     ) -> Result<Pooled<PoolClient<B>>, ClientConnectError> {
-        let checkout = self.pool.checkout(pool_key.clone());
-        let connect = self.connect_to(pool_key);
-        let is_ver_h2 = self.config.ver == Ver::Http2;
-        match future::select(checkout, connect).await {
-            Either::Left((Ok(checked_out), connecting)) => {
-                if connecting.started() {
-                    let bg = connecting
-                        .map_err(|err| {
-                            trace!("background connect error: {}", err);
-                        })
-                        .map(|_pooled| {});
-                    self.conn_builder.exec.execute(bg);
-                }
-                Ok(checked_out)
-            }
-            Either::Right((Ok(connected), _checkout)) => Ok(connected),
-            Either::Left((Err(err), connecting)) => {
-                if err.is_canceled() {
-                    connecting.await.map_err(ClientConnectError::Normal)
-                } else {
-                    Err(ClientConnectError::Normal(err))
-                }
-            }
-            Either::Right((Err(err), checkout)) => {
-                if err.is_canceled() {
-                    checkout
-                        .await
-                        .map_err(move |err| {
-                            if is_ver_h2 && err.is_canceled()
-                                && err.find_source::<CheckoutIsClosedError>().is_some()
-                            {
-                                ClientConnectError::H2CheckoutIsClosed(err)
-                            } else {
-                                ClientConnectError::Normal(err)
-                            }
-                        })
-                } else {
-                    Err(ClientConnectError::Normal(err))
-                }
-            }
-        }
+        loop {}
     }
     fn connect_to(
         &self,
@@ -432,10 +276,10 @@ where
         &mut self,
         _: &mut task::Context<'_>,
     ) -> Poll<Result<(), Self::Error>> {
-        Poll::Ready(Ok(()))
+        loop {}
     }
     fn call(&mut self, req: Request<B>) -> Self::Future {
-        self.request(req)
+        loop {}
     }
 }
 impl<C, B> tower_service::Service<Request<B>> for &'_ Client<C, B>
@@ -452,25 +296,20 @@ where
         &mut self,
         _: &mut task::Context<'_>,
     ) -> Poll<Result<(), Self::Error>> {
-        Poll::Ready(Ok(()))
+        loop {}
     }
     fn call(&mut self, req: Request<B>) -> Self::Future {
-        self.request(req)
+        loop {}
     }
 }
 impl<C: Clone, B> Clone for Client<C, B> {
     fn clone(&self) -> Client<C, B> {
-        Client {
-            config: self.config.clone(),
-            conn_builder: self.conn_builder.clone(),
-            connector: self.connector.clone(),
-            pool: self.pool.clone(),
-        }
+        loop {}
     }
 }
 impl<C, B> fmt::Debug for Client<C, B> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Client").finish()
+        loop {}
     }
 }
 impl ResponseFuture {
@@ -478,26 +317,21 @@ impl ResponseFuture {
     where
         F: Future<Output = crate::Result<Response<Body>>> + Send + 'static,
     {
-        Self {
-            inner: SyncWrapper::new(Box::pin(value)),
-        }
+        loop {}
     }
     fn error_version(ver: Version) -> Self {
-        warn!("Request has unsupported version \"{:?}\"", ver);
-        ResponseFuture::new(
-            Box::pin(future::err(crate::Error::new_user_unsupported_version())),
-        )
+        loop {}
     }
 }
 impl fmt::Debug for ResponseFuture {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.pad("Future<Response>")
+        loop {}
     }
 }
 impl Future for ResponseFuture {
     type Output = crate::Result<Response<Body>>;
     fn poll(mut self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<Self::Output> {
-        self.inner.get_mut().as_mut().poll(cx)
+        loop {}
     }
 }
 #[allow(missing_debug_implementations)]
@@ -512,35 +346,19 @@ enum PoolTx<B> {
 }
 impl<B> PoolClient<B> {
     fn poll_ready(&mut self, cx: &mut task::Context<'_>) -> Poll<crate::Result<()>> {
-        match self.tx {
-            PoolTx::Http1(ref mut tx) => tx.poll_ready(cx),
-            #[cfg(feature = "http2")]
-            PoolTx::Http2(_) => Poll::Ready(Ok(())),
-        }
+        loop {}
     }
     fn is_http1(&self) -> bool {
-        !self.is_http2()
+        loop {}
     }
     fn is_http2(&self) -> bool {
-        match self.tx {
-            PoolTx::Http1(_) => false,
-            #[cfg(feature = "http2")]
-            PoolTx::Http2(_) => true,
-        }
+        loop {}
     }
     fn is_ready(&self) -> bool {
-        match self.tx {
-            PoolTx::Http1(ref tx) => tx.is_ready(),
-            #[cfg(feature = "http2")]
-            PoolTx::Http2(ref tx) => tx.is_ready(),
-        }
+        loop {}
     }
     fn is_closed(&self) -> bool {
-        match self.tx {
-            PoolTx::Http1(ref tx) => tx.is_closed(),
-            #[cfg(feature = "http2")]
-            PoolTx::Http2(ref tx) => tx.is_closed(),
-        }
+        loop {}
     }
 }
 impl<B: HttpBody + 'static> PoolClient<B> {
@@ -566,36 +384,13 @@ where
     B: Send + 'static,
 {
     fn is_open(&self) -> bool {
-        match self.tx {
-            PoolTx::Http1(ref tx) => tx.is_ready(),
-            #[cfg(feature = "http2")]
-            PoolTx::Http2(ref tx) => tx.is_ready(),
-        }
+        loop {}
     }
     fn reserve(self) -> Reservation<Self> {
-        match self.tx {
-            PoolTx::Http1(tx) => {
-                Reservation::Unique(PoolClient {
-                    conn_info: self.conn_info,
-                    tx: PoolTx::Http1(tx),
-                })
-            }
-            #[cfg(feature = "http2")]
-            PoolTx::Http2(tx) => {
-                let b = PoolClient {
-                    conn_info: self.conn_info.clone(),
-                    tx: PoolTx::Http2(tx.clone()),
-                };
-                let a = PoolClient {
-                    conn_info: self.conn_info,
-                    tx: PoolTx::Http2(tx),
-                };
-                Reservation::Shared(a, b)
-            }
-        }
+        loop {}
     }
     fn can_share(&self) -> bool {
-        self.is_http2()
+        loop {}
     }
 }
 #[allow(missing_debug_implementations)]
@@ -631,93 +426,28 @@ pub(super) enum Ver {
     Http2,
 }
 fn origin_form(uri: &mut Uri) {
-    let path = match uri.path_and_query() {
-        Some(path) if path.as_str() != "/" => {
-            let mut parts = ::http::uri::Parts::default();
-            parts.path_and_query = Some(path.clone());
-            Uri::from_parts(parts).expect("path is valid uri")
-        }
-        _none_or_just_slash => {
-            debug_assert!(Uri::default() == "/");
-            Uri::default()
-        }
-    };
-    *uri = path;
+    loop {}
 }
 fn absolute_form(uri: &mut Uri) {
-    debug_assert!(uri.scheme().is_some(), "absolute_form needs a scheme");
-    debug_assert!(uri.authority().is_some(), "absolute_form needs an authority");
-    if uri.scheme() == Some(&Scheme::HTTPS) {
-        origin_form(uri);
-    }
+    loop {}
 }
 fn authority_form(uri: &mut Uri) {
-    if let Some(path) = uri.path_and_query() {
-        if path != "/" {
-            warn!("HTTP/1.1 CONNECT request stripping path: {:?}", path);
-        }
-    }
-    *uri = match uri.authority() {
-        Some(auth) => {
-            let mut parts = ::http::uri::Parts::default();
-            parts.authority = Some(auth.clone());
-            Uri::from_parts(parts).expect("authority is valid")
-        }
-        None => {
-            unreachable!("authority_form with relative uri");
-        }
-    };
+    loop {}
 }
 fn extract_domain(uri: &mut Uri, is_http_connect: bool) -> crate::Result<PoolKey> {
-    let uri_clone = uri.clone();
-    match (uri_clone.scheme(), uri_clone.authority()) {
-        (Some(scheme), Some(auth)) => Ok((scheme.clone(), auth.clone())),
-        (None, Some(auth)) if is_http_connect => {
-            let scheme = match auth.port_u16() {
-                Some(443) => {
-                    set_scheme(uri, Scheme::HTTPS);
-                    Scheme::HTTPS
-                }
-                _ => {
-                    set_scheme(uri, Scheme::HTTP);
-                    Scheme::HTTP
-                }
-            };
-            Ok((scheme, auth.clone()))
-        }
-        _ => {
-            debug!("Client requires absolute-form URIs, received: {:?}", uri);
-            Err(crate::Error::new_user_absolute_uri_required())
-        }
-    }
+    loop {}
 }
 fn domain_as_uri((scheme, auth): PoolKey) -> Uri {
-    http::uri::Builder::new()
-        .scheme(scheme)
-        .authority(auth)
-        .path_and_query("/")
-        .build()
-        .expect("domain is valid Uri")
+    loop {}
 }
 fn set_scheme(uri: &mut Uri, scheme: Scheme) {
-    debug_assert!(uri.scheme().is_none(), "set_scheme expects no existing scheme");
-    let old = mem::replace(uri, Uri::default());
-    let mut parts: ::http::uri::Parts = old.into();
-    parts.scheme = Some(scheme);
-    parts.path_and_query = Some("/".parse().expect("slash is a valid path"));
-    *uri = Uri::from_parts(parts).expect("scheme is valid");
+    loop {}
 }
 fn get_non_default_port(uri: &Uri) -> Option<Port<&str>> {
-    match (uri.port().map(|p| p.as_u16()), is_schema_secure(uri)) {
-        (Some(443), true) => None,
-        (Some(80), false) => None,
-        _ => uri.port(),
-    }
+    loop {}
 }
 fn is_schema_secure(uri: &Uri) -> bool {
-    uri.scheme_str()
-        .map(|scheme_str| matches!(scheme_str, "wss" | "https"))
-        .unwrap_or_default()
+    loop {}
 }
 /// A builder to configure a new [`Client`](Client).
 ///
@@ -747,18 +477,7 @@ pub struct Builder {
 }
 impl Default for Builder {
     fn default() -> Self {
-        Self {
-            client_config: Config {
-                retry_canceled_requests: true,
-                set_host: true,
-                ver: Ver::Auto,
-            },
-            conn_builder: conn::Builder::new(),
-            pool_config: pool::Config {
-                idle_timeout: Some(Duration::from_secs(90)),
-                max_idle_per_host: std::usize::MAX,
-            },
-        }
+        loop {}
     }
 }
 impl Builder {
@@ -767,13 +486,7 @@ impl Builder {
         note = "name is confusing, to disable the connection pool, call pool_max_idle_per_host(0)"
     )]
     pub(crate) fn keep_alive(&mut self, val: bool) -> &mut Self {
-        if !val {
-            self.pool_max_idle_per_host(0)
-        } else if self.pool_config.max_idle_per_host == 0 {
-            self.pool_max_idle_per_host(std::usize::MAX)
-        } else {
-            self
-        }
+        loop {}
     }
     #[doc(hidden)]
     #[deprecated(note = "renamed to `pool_idle_timeout`")]
@@ -781,7 +494,7 @@ impl Builder {
     where
         D: Into<Option<Duration>>,
     {
-        self.pool_idle_timeout(val)
+        loop {}
     }
     /// Set an optional timeout for idle sockets being kept-alive.
     ///
@@ -792,21 +505,18 @@ impl Builder {
     where
         D: Into<Option<Duration>>,
     {
-        self.pool_config.idle_timeout = val.into();
-        self
+        loop {}
     }
     #[doc(hidden)]
     #[deprecated(note = "renamed to `pool_max_idle_per_host`")]
     pub(crate) fn max_idle_per_host(&mut self, max_idle: usize) -> &mut Self {
-        self.pool_config.max_idle_per_host = max_idle;
-        self
+        loop {}
     }
     /// Sets the maximum idle connection per host allowed in the pool.
     ///
     /// Default is `usize::MAX` (no limit).
     pub(crate) fn pool_max_idle_per_host(&mut self, max_idle: usize) -> &mut Self {
-        self.pool_config.max_idle_per_host = max_idle;
-        self
+        loop {}
     }
     /// Sets the exact size of the read buffer to *always* use.
     ///
@@ -814,8 +524,7 @@ impl Builder {
     ///
     /// Default is an adaptive read buffer.
     pub(crate) fn http1_read_buf_exact_size(&mut self, sz: usize) -> &mut Self {
-        self.conn_builder.http1_read_buf_exact_size(Some(sz));
-        self
+        loop {}
     }
     /// Set the maximum buffer size for the connection.
     ///
@@ -829,8 +538,7 @@ impl Builder {
     #[cfg(feature = "http1")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http1")))]
     pub(crate) fn http1_max_buf_size(&mut self, max: usize) -> &mut Self {
-        self.conn_builder.http1_max_buf_size(max);
-        self
+        loop {}
     }
     /// Set whether HTTP/1 connections will accept spaces between header names
     /// and the colon that follow them in responses.
@@ -858,8 +566,7 @@ impl Builder {
         &mut self,
         val: bool,
     ) -> &mut Self {
-        self.conn_builder.http1_allow_spaces_after_header_name_in_responses(val);
-        self
+        loop {}
     }
     /// Set whether HTTP/1 connections will accept obsolete line folding for
     /// header values.
@@ -896,8 +603,7 @@ impl Builder {
         &mut self,
         val: bool,
     ) -> &mut Self {
-        self.conn_builder.http1_allow_obsolete_multiline_headers_in_responses(val);
-        self
+        loop {}
     }
     /// Sets whether invalid header lines should be silently ignored in HTTP/1 responses.
     ///
@@ -927,8 +633,7 @@ impl Builder {
         &mut self,
         val: bool,
     ) -> &mut Builder {
-        self.conn_builder.http1_ignore_invalid_headers_in_responses(val);
-        self
+        loop {}
     }
     /// Set whether HTTP/1 connections should try to use vectored writes,
     /// or always flatten into a single buffer.
@@ -943,8 +648,7 @@ impl Builder {
     /// Default is `auto`. In this mode hyper will try to guess which
     /// mode to use
     pub(crate) fn http1_writev(&mut self, enabled: bool) -> &mut Builder {
-        self.conn_builder.http1_writev(enabled);
-        self
+        loop {}
     }
     /// Set whether HTTP/1 connections will write header names as title case at
     /// the socket level.
@@ -953,8 +657,7 @@ impl Builder {
     ///
     /// Default is false.
     pub(crate) fn http1_title_case_headers(&mut self, val: bool) -> &mut Self {
-        self.conn_builder.http1_title_case_headers(val);
-        self
+        loop {}
     }
     /// Set whether to support preserving original header cases.
     ///
@@ -970,15 +673,13 @@ impl Builder {
     ///
     /// Default is false.
     pub(crate) fn http1_preserve_header_case(&mut self, val: bool) -> &mut Self {
-        self.conn_builder.http1_preserve_header_case(val);
-        self
+        loop {}
     }
     /// Set whether HTTP/0.9 responses should be tolerated.
     ///
     /// Default is false.
     pub(crate) fn http09_responses(&mut self, val: bool) -> &mut Self {
-        self.conn_builder.http09_responses(val);
-        self
+        loop {}
     }
     /// Set whether the connection **must** use HTTP/2.
     ///
@@ -993,8 +694,7 @@ impl Builder {
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_only(&mut self, val: bool) -> &mut Self {
-        self.client_config.ver = if val { Ver::Http2 } else { Ver::Auto };
-        self
+        loop {}
     }
     /// Sets the [`SETTINGS_INITIAL_WINDOW_SIZE`][spec] option for HTTP2
     /// stream-level flow control.
@@ -1010,8 +710,7 @@ impl Builder {
         &mut self,
         sz: impl Into<Option<u32>>,
     ) -> &mut Self {
-        self.conn_builder.http2_initial_stream_window_size(sz.into());
-        self
+        loop {}
     }
     /// Sets the max connection-level flow control for HTTP2
     ///
@@ -1024,8 +723,7 @@ impl Builder {
         &mut self,
         sz: impl Into<Option<u32>>,
     ) -> &mut Self {
-        self.conn_builder.http2_initial_connection_window_size(sz.into());
-        self
+        loop {}
     }
     /// Sets whether to use an adaptive flow control.
     ///
@@ -1035,8 +733,7 @@ impl Builder {
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_adaptive_window(&mut self, enabled: bool) -> &mut Self {
-        self.conn_builder.http2_adaptive_window(enabled);
-        self
+        loop {}
     }
     /// Sets the maximum frame size to use for HTTP2.
     ///
@@ -1049,8 +746,7 @@ impl Builder {
         &mut self,
         sz: impl Into<Option<u32>>,
     ) -> &mut Self {
-        self.conn_builder.http2_max_frame_size(sz);
-        self
+        loop {}
     }
     /// Sets an interval for HTTP2 Ping frames should be sent to keep a
     /// connection alive.
@@ -1069,8 +765,7 @@ impl Builder {
         &mut self,
         interval: impl Into<Option<Duration>>,
     ) -> &mut Self {
-        self.conn_builder.http2_keep_alive_interval(interval);
-        self
+        loop {}
     }
     /// Sets a timeout for receiving an acknowledgement of the keep-alive ping.
     ///
@@ -1086,8 +781,7 @@ impl Builder {
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_keep_alive_timeout(&mut self, timeout: Duration) -> &mut Self {
-        self.conn_builder.http2_keep_alive_timeout(timeout);
-        self
+        loop {}
     }
     /// Sets whether HTTP2 keep-alive should apply while the connection is idle.
     ///
@@ -1105,8 +799,7 @@ impl Builder {
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_keep_alive_while_idle(&mut self, enabled: bool) -> &mut Self {
-        self.conn_builder.http2_keep_alive_while_idle(enabled);
-        self
+        loop {}
     }
     /// Sets the maximum number of HTTP2 concurrent locally reset streams.
     ///
@@ -1122,8 +815,7 @@ impl Builder {
         &mut self,
         max: usize,
     ) -> &mut Self {
-        self.conn_builder.http2_max_concurrent_reset_streams(max);
-        self
+        loop {}
     }
     /// Set the maximum write buffer size for each HTTP/2 stream.
     ///
@@ -1135,8 +827,7 @@ impl Builder {
     #[cfg(feature = "http2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     pub(crate) fn http2_max_send_buf_size(&mut self, max: usize) -> &mut Self {
-        self.conn_builder.http2_max_send_buf_size(max);
-        self
+        loop {}
     }
     /// Set whether to retry requests that get disrupted before ever starting
     /// to write.
@@ -1151,8 +842,7 @@ impl Builder {
     /// Default is `true`.
     #[inline]
     pub(crate) fn retry_canceled_requests(&mut self, val: bool) -> &mut Self {
-        self.client_config.retry_canceled_requests = val;
-        self
+        loop {}
     }
     /// Set whether to automatically add the `Host` header to requests.
     ///
@@ -1162,16 +852,14 @@ impl Builder {
     /// Default is `true`.
     #[inline]
     pub(crate) fn set_host(&mut self, val: bool) -> &mut Self {
-        self.client_config.set_host = val;
-        self
+        loop {}
     }
     /// Provide an executor to execute background `Connection` tasks.
     pub(crate) fn executor<E>(&mut self, exec: E) -> &mut Self
     where
         E: Executor<BoxSendFuture> + Send + Sync + 'static,
     {
-        self.conn_builder.executor(exec);
-        self
+        loop {}
     }
     /// Builder a client with this configuration and the default `HttpConnector`.
     #[cfg(feature = "tcp")]
@@ -1180,11 +868,7 @@ impl Builder {
         B: HttpBody + Send,
         B::Data: Send,
     {
-        let mut connector = HttpConnector::new();
-        if self.pool_config.is_enabled() {
-            connector.set_keepalive(self.pool_config.idle_timeout);
-        }
-        self.build(connector)
+        loop {}
     }
     /// Combine the configuration of this builder with a connector to create a `Client`.
     pub(crate) fn build<C, B>(&self, connector: C) -> Client<C, B>
@@ -1193,21 +877,12 @@ impl Builder {
         B: HttpBody + Send,
         B::Data: Send,
     {
-        Client {
-            config: self.client_config,
-            conn_builder: self.conn_builder.clone(),
-            connector,
-            pool: Pool::new(self.pool_config, &self.conn_builder.exec),
-        }
+        loop {}
     }
 }
 impl fmt::Debug for Builder {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Builder")
-            .field("client_config", &self.client_config)
-            .field("conn_builder", &self.conn_builder)
-            .field("pool_config", &self.pool_config)
-            .finish()
+        loop {}
     }
 }
 #[cfg(test)]
@@ -1215,91 +890,34 @@ mod unit_tests {
     use super::*;
     #[test]
     fn response_future_is_sync() {
-        fn assert_sync<T: Sync>() {}
-        assert_sync::<ResponseFuture>();
+        loop {}
     }
     #[test]
     fn set_relative_uri_with_implicit_path() {
-        let mut uri = "http://hyper.rs".parse().unwrap();
-        origin_form(&mut uri);
-        assert_eq!(uri.to_string(), "/");
+        loop {}
     }
     #[test]
     fn test_origin_form() {
-        let mut uri = "http://hyper.rs/guides".parse().unwrap();
-        origin_form(&mut uri);
-        assert_eq!(uri.to_string(), "/guides");
-        let mut uri = "http://hyper.rs/guides?foo=bar".parse().unwrap();
-        origin_form(&mut uri);
-        assert_eq!(uri.to_string(), "/guides?foo=bar");
+        loop {}
     }
     #[test]
     fn test_absolute_form() {
-        let mut uri = "http://hyper.rs/guides".parse().unwrap();
-        absolute_form(&mut uri);
-        assert_eq!(uri.to_string(), "http://hyper.rs/guides");
-        let mut uri = "https://hyper.rs/guides".parse().unwrap();
-        absolute_form(&mut uri);
-        assert_eq!(uri.to_string(), "/guides");
+        loop {}
     }
     #[test]
     fn test_authority_form() {
-        let _ = pretty_env_logger::try_init();
-        let mut uri = "http://hyper.rs".parse().unwrap();
-        authority_form(&mut uri);
-        assert_eq!(uri.to_string(), "hyper.rs");
-        let mut uri = "hyper.rs".parse().unwrap();
-        authority_form(&mut uri);
-        assert_eq!(uri.to_string(), "hyper.rs");
+        loop {}
     }
     #[test]
     fn test_extract_domain_connect_no_port() {
-        let mut uri = "hyper.rs".parse().unwrap();
-        let (scheme, host) = extract_domain(&mut uri, true).expect("extract domain");
-        assert_eq!(scheme, * "http");
-        assert_eq!(host, "hyper.rs");
+        loop {}
     }
     #[test]
     fn test_is_secure() {
-        assert_eq!(
-            is_schema_secure(& "http://hyper.rs".parse::< Uri > ().unwrap()), false
-        );
-        assert_eq!(is_schema_secure(& "hyper.rs".parse::< Uri > ().unwrap()), false);
-        assert_eq!(
-            is_schema_secure(& "wss://hyper.rs".parse::< Uri > ().unwrap()), true
-        );
-        assert_eq!(
-            is_schema_secure(& "ws://hyper.rs".parse::< Uri > ().unwrap()), false
-        );
+        loop {}
     }
     #[test]
     fn test_get_non_default_port() {
-        assert!(
-            get_non_default_port(& "http://hyper.rs".parse::< Uri > ().unwrap())
-            .is_none()
-        );
-        assert!(
-            get_non_default_port(& "http://hyper.rs:80".parse::< Uri > ().unwrap())
-            .is_none()
-        );
-        assert!(
-            get_non_default_port(& "https://hyper.rs:443".parse::< Uri > ().unwrap())
-            .is_none()
-        );
-        assert!(
-            get_non_default_port(& "hyper.rs:80".parse::< Uri > ().unwrap()).is_none()
-        );
-        assert_eq!(
-            get_non_default_port(& "http://hyper.rs:123".parse::< Uri > ().unwrap())
-            .unwrap().as_u16(), 123
-        );
-        assert_eq!(
-            get_non_default_port(& "https://hyper.rs:80".parse::< Uri > ().unwrap())
-            .unwrap().as_u16(), 80
-        );
-        assert_eq!(
-            get_non_default_port(& "hyper.rs:123".parse::< Uri > ().unwrap()).unwrap()
-            .as_u16(), 123
-        );
+        loop {}
     }
 }

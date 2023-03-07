@@ -81,64 +81,34 @@ pub(crate) trait IntoDynTaskType {
 }
 impl hyper_executor {
     fn new() -> Arc<hyper_executor> {
-        Arc::new(hyper_executor {
-            driver: Mutex::new(FuturesUnordered::new()),
-            spawn_queue: Mutex::new(Vec::new()),
-            is_woken: Arc::new(ExecWaker(AtomicBool::new(false))),
-        })
+        loop {}
     }
     pub(crate) fn downgrade(exec: &Arc<hyper_executor>) -> WeakExec {
-        WeakExec(Arc::downgrade(exec))
+        loop {}
     }
     fn spawn(&self, task: Box<hyper_task>) {
-        self.spawn_queue.lock().unwrap().push(TaskFuture { task: Some(task) });
+        loop {}
     }
     fn poll_next(&self) -> Option<Box<hyper_task>> {
-        self.drain_queue();
-        let waker = futures_util::task::waker_ref(&self.is_woken);
-        let mut cx = Context::from_waker(&waker);
-        loop {
-            match Pin::new(&mut *self.driver.lock().unwrap()).poll_next(&mut cx) {
-                Poll::Ready(val) => return val,
-                Poll::Pending => {
-                    if self.drain_queue() {
-                        continue;
-                    }
-                    if self.is_woken.0.swap(false, Ordering::SeqCst) {
-                        continue;
-                    }
-                    return None;
-                }
-            }
-        }
+        loop {}
     }
     fn drain_queue(&self) -> bool {
-        let mut queue = self.spawn_queue.lock().unwrap();
-        if queue.is_empty() {
-            return false;
-        }
-        let driver = self.driver.lock().unwrap();
-        for task in queue.drain(..) {
-            driver.push(task);
-        }
-        true
+        loop {}
     }
 }
 impl futures_util::task::ArcWake for ExecWaker {
     fn wake_by_ref(me: &Arc<ExecWaker>) {
-        me.0.store(true, Ordering::SeqCst);
+        loop {}
     }
 }
 impl WeakExec {
     pub(crate) fn new() -> Self {
-        WeakExec(Weak::new())
+        loop {}
     }
 }
 impl crate::rt::Executor<BoxFuture<()>> for WeakExec {
     fn execute(&self, fut: BoxFuture<()>) {
-        if let Some(exec) = self.0.upgrade() {
-            exec.spawn(hyper_task::boxed(fut));
-        }
+        loop {}
     }
 }
 ffi_fn! {
@@ -175,30 +145,16 @@ impl hyper_task {
         F: Future + Send + 'static,
         F::Output: IntoDynTaskType + Send + Sync + 'static,
     {
-        Box::new(hyper_task {
-            future: Box::pin(async move { fut.await.into_dyn_task_type() }),
-            output: None,
-            userdata: UserDataPointer(ptr::null_mut()),
-        })
+        loop {}
     }
     fn output_type(&self) -> hyper_task_return_type {
-        match self.output {
-            None => hyper_task_return_type::HYPER_TASK_EMPTY,
-            Some(ref val) => val.as_task_type(),
-        }
+        loop {}
     }
 }
 impl Future for TaskFuture {
     type Output = Box<hyper_task>;
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        match Pin::new(&mut self.task.as_mut().unwrap().future).poll(cx) {
-            Poll::Ready(val) => {
-                let mut task = self.task.take().unwrap();
-                task.output = Some(val);
-                Poll::Ready(task)
-            }
-            Poll::Pending => Poll::Pending,
-        }
+        loop {}
     }
 }
 ffi_fn! {
@@ -235,12 +191,12 @@ ffi_fn! {
 }
 unsafe impl AsTaskType for () {
     fn as_task_type(&self) -> hyper_task_return_type {
-        hyper_task_return_type::HYPER_TASK_EMPTY
+        loop {}
     }
 }
 unsafe impl AsTaskType for crate::Error {
     fn as_task_type(&self) -> hyper_task_return_type {
-        hyper_task_return_type::HYPER_TASK_ERROR
+        loop {}
     }
 }
 impl<T> IntoDynTaskType for T
@@ -248,7 +204,7 @@ where
     T: AsTaskType + Send + Sync + 'static,
 {
     fn into_dyn_task_type(self) -> BoxAny {
-        Box::new(self)
+        loop {}
     }
 }
 impl<T> IntoDynTaskType for crate::Result<T>
@@ -256,10 +212,7 @@ where
     T: IntoDynTaskType + Send + Sync + 'static,
 {
     fn into_dyn_task_type(self) -> BoxAny {
-        match self {
-            Ok(val) => val.into_dyn_task_type(),
-            Err(err) => Box::new(err),
-        }
+        loop {}
     }
 }
 impl<T> IntoDynTaskType for Option<T>
@@ -267,15 +220,12 @@ where
     T: IntoDynTaskType + Send + Sync + 'static,
 {
     fn into_dyn_task_type(self) -> BoxAny {
-        match self {
-            Some(val) => val.into_dyn_task_type(),
-            None => ().into_dyn_task_type(),
-        }
+        loop {}
     }
 }
 impl hyper_context<'_> {
     pub(crate) fn wrap<'a, 'b>(cx: &'a mut Context<'b>) -> &'a mut hyper_context<'b> {
-        unsafe { std::mem::transmute::<&mut Context<'_>, &mut hyper_context<'_>>(cx) }
+        loop {}
     }
 }
 ffi_fn! {

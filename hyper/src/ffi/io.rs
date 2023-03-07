@@ -84,7 +84,7 @@ extern "C" fn read_noop(
     _buf: *mut u8,
     _buf_len: size_t,
 ) -> size_t {
-    0
+    loop {}
 }
 /// cbindgen:ignore
 extern "C" fn write_noop(
@@ -93,7 +93,7 @@ extern "C" fn write_noop(
     _buf: *const u8,
     _buf_len: size_t,
 ) -> size_t {
-    0
+    loop {}
 }
 impl AsyncRead for hyper_io {
     fn poll_read(
@@ -101,21 +101,7 @@ impl AsyncRead for hyper_io {
         cx: &mut Context<'_>,
         buf: &mut tokio::io::ReadBuf<'_>,
     ) -> Poll<std::io::Result<()>> {
-        let buf_ptr = unsafe { buf.unfilled_mut() }.as_mut_ptr() as *mut u8;
-        let buf_len = buf.remaining();
-        match (self.read)(self.userdata, hyper_context::wrap(cx), buf_ptr, buf_len) {
-            HYPER_IO_PENDING => Poll::Pending,
-            HYPER_IO_ERROR => {
-                Poll::Ready(
-                    Err(std::io::Error::new(std::io::ErrorKind::Other, "io error")),
-                )
-            }
-            ok => {
-                unsafe { buf.assume_init(ok) };
-                buf.advance(ok);
-                Poll::Ready(Ok(()))
-            }
-        }
+        loop {}
     }
 }
 impl AsyncWrite for hyper_io {
@@ -124,29 +110,19 @@ impl AsyncWrite for hyper_io {
         cx: &mut Context<'_>,
         buf: &[u8],
     ) -> Poll<std::io::Result<usize>> {
-        let buf_ptr = buf.as_ptr();
-        let buf_len = buf.len();
-        match (self.write)(self.userdata, hyper_context::wrap(cx), buf_ptr, buf_len) {
-            HYPER_IO_PENDING => Poll::Pending,
-            HYPER_IO_ERROR => {
-                Poll::Ready(
-                    Err(std::io::Error::new(std::io::ErrorKind::Other, "io error")),
-                )
-            }
-            ok => Poll::Ready(Ok(ok)),
-        }
+        loop {}
     }
     fn poll_flush(
         self: Pin<&mut Self>,
         _: &mut Context<'_>,
     ) -> Poll<std::io::Result<()>> {
-        Poll::Ready(Ok(()))
+        loop {}
     }
     fn poll_shutdown(
         self: Pin<&mut Self>,
         _: &mut Context<'_>,
     ) -> Poll<std::io::Result<()>> {
-        Poll::Ready(Ok(()))
+        loop {}
     }
 }
 unsafe impl Send for hyper_io {}

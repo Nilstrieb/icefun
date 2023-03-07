@@ -8,6 +8,6 @@ pub(crate) struct Server<I, S, E = Exec> {
 }
 impl<I: fmt::Debug, S: fmt::Debug> fmt::Debug for Server<I, S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Server").finish()
+        loop {}
     }
 }
