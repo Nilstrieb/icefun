@@ -1,5 +1,4 @@
 use std::convert::Infallible;
-use std::net::SocketAddr;
 
 use futures::future;
 use hyper::service::make_service_fn;

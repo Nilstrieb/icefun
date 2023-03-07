@@ -11,11 +11,6 @@ mod then;
 mod unify;
 mod untuple_one;
 mod wrap;
-use std::future::Future;
-use futures_util::{future, TryFuture, TryFutureExt};
-pub(crate) use crate::generic::{one, Combine, Either, Func, One, Tuple};
-use crate::reject::{CombineRejection, IsReject, Rejection};
-use crate::route::{Route};
 pub(crate) use self::and::And;
 use self::and_then::AndThen;
 pub use self::boxed::BoxedFilter;
@@ -29,6 +24,11 @@ use self::unify::Unify;
 use self::untuple_one::UntupleOne;
 pub use self::wrap::wrap_fn;
 pub(crate) use self::wrap::{Wrap, WrapSealed};
+pub(crate) use crate::generic::{one, Combine, Either, Func, One, Tuple};
+use crate::reject::{CombineRejection, IsReject, Rejection};
+use crate::route::Route;
+use futures_util::{future, TryFuture, TryFutureExt};
+use std::future::Future;
 pub trait FilterBase {
     type Extract: Tuple;
     type Error: IsReject;
@@ -46,46 +46,7 @@ pub trait FilterBase {
 #[allow(missing_debug_implementations)]
 pub struct Internal;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 pub trait Filter: FilterBase {
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     fn and<F>(self, other: F) -> And<Self, F>
     where
         Self: Sized,
@@ -95,18 +56,7 @@ pub trait Filter: FilterBase {
     {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     fn or<F>(self, other: F) -> Or<Self, F>
     where
         Self: Filter<Error = Rejection> + Sized,
@@ -115,47 +65,7 @@ pub trait Filter: FilterBase {
     {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     fn map<F>(self, fun: F) -> Map<Self, F>
     where
         Self: Sized,
@@ -163,21 +73,7 @@ pub trait Filter: FilterBase {
     {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     fn then<F>(self, fun: F) -> Then<Self, F>
     where
         Self: Sized,
@@ -186,32 +82,7 @@ pub trait Filter: FilterBase {
     {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     fn and_then<F>(self, fun: F) -> AndThen<Self, F>
     where
         Self: Sized,
@@ -221,10 +92,7 @@ pub trait Filter: FilterBase {
     {
         loop {}
     }
-    
-    
-    
-    
+
     fn or_else<F>(self, fun: F) -> OrElse<Self, F>
     where
         Self: Filter<Error = Rejection> + Sized,
@@ -234,13 +102,7 @@ pub trait Filter: FilterBase {
     {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
+
     fn recover<F>(self, fun: F) -> Recover<Self, F>
     where
         Self: Filter<Error = Rejection> + Sized,
@@ -250,28 +112,7 @@ pub trait Filter: FilterBase {
     {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     fn unify<T>(self) -> Unify<Self>
     where
         Self: Filter<Extract = (Either<T, T>,)> + Sized,
@@ -279,41 +120,7 @@ pub trait Filter: FilterBase {
     {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     fn untuple_one<T>(self) -> UntupleOne<Self>
     where
         Self: Filter<Extract = (T,)> + Sized,
@@ -321,22 +128,7 @@ pub trait Filter: FilterBase {
     {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     fn with<W>(self, wrapper: W) -> W::Wrapped
     where
         Self: Sized,
@@ -344,30 +136,7 @@ pub trait Filter: FilterBase {
     {
         loop {}
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     fn boxed(self) -> BoxedFilter<Self::Extract>
     where
         Self: Sized + Send + Sync + 'static,

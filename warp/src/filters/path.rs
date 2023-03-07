@@ -124,41 +124,15 @@
 //! like `body` or `headers`. If a different type of filter comes first, a request
 //! with an invalid body for route `/right-path-wrong-body` may try matching against `/wrong-path`
 //! and return the error from `/wrong-path` instead of the correct body-related error.
-use std::convert::Infallible;
-use std::fmt;
-use std::str::FromStr;
-use futures_util::future;
-use http::uri::PathAndQuery;
 use self::internal::Opaque;
 use crate::filter::{filter_fn, one, Filter, FilterBase, Internal, One, Tuple};
 use crate::reject::{self, Rejection};
 use crate::route::Route;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+use futures_util::future;
+use http::uri::PathAndQuery;
+use std::convert::Infallible;
+use std::fmt;
+use std::str::FromStr;
 
 pub fn path<P>(p: P) -> Exact<Opaque<P>>
 where
@@ -166,8 +140,6 @@ where
 {
     loop {}
 }
-
-
 
 #[allow(missing_debug_implementations)]
 #[derive(Clone, Copy)]
@@ -185,19 +157,6 @@ where
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 pub fn end() -> impl Filter<Extract = (), Error = Rejection> + Copy {
     filter_fn(move |route| {
         if route.path().is_empty() {
@@ -208,27 +167,8 @@ pub fn end() -> impl Filter<Extract = (), Error = Rejection> + Copy {
     })
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-pub fn param<T: FromStr + Send + 'static>() -> impl Filter<
-    Extract = One<T>,
-    Error = Rejection,
-> + Copy {
+pub fn param<T: FromStr + Send + 'static>(
+) -> impl Filter<Extract = One<T>, Error = Rejection> + Copy {
     filter_segment(|seg| {
         tracing::trace!("param?: {:?}", seg);
         if seg.is_empty() {
@@ -238,29 +178,16 @@ pub fn param<T: FromStr + Send + 'static>() -> impl Filter<
     })
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 pub fn tail() -> impl Filter<Extract = One<Tail>, Error = Infallible> + Copy {
     filter_fn(move |route| {
         let path = path_and_query(route);
         let idx = route.matched_path_index();
         let end = path.path().len() - idx;
         route.set_unmatched_path(end);
-        future::ok(one(Tail { path, start_index: idx }))
+        future::ok(one(Tail {
+            path,
+            start_index: idx,
+        }))
     })
 }
 
@@ -269,7 +196,6 @@ pub struct Tail {
     start_index: usize,
 }
 impl Tail {
-    
     pub fn as_str(&self) -> &str {
         loop {}
     }
@@ -280,28 +206,14 @@ impl fmt::Debug for Tail {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 pub fn peek() -> impl Filter<Extract = One<Peek>, Error = Infallible> + Copy {
     filter_fn(move |route| {
         let path = path_and_query(route);
         let idx = route.matched_path_index();
-        future::ok(one(Peek { path, start_index: idx }))
+        future::ok(one(Peek {
+            path,
+            start_index: idx,
+        }))
     })
 }
 
@@ -310,11 +222,10 @@ pub struct Peek {
     start_index: usize,
 }
 impl Peek {
-    
     pub fn as_str(&self) -> &str {
         loop {}
     }
-    
+
     pub fn segments(&self) -> impl Iterator<Item = &str> {
         self.as_str().split('/').filter(|seg| !seg.is_empty())
     }
@@ -325,43 +236,12 @@ impl fmt::Debug for Peek {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 pub fn full() -> impl Filter<Extract = One<FullPath>, Error = Infallible> + Copy {
     filter_fn(move |route| future::ok(one(FullPath(path_and_query(route)))))
 }
 
 pub struct FullPath(PathAndQuery);
 impl FullPath {
-    
     pub fn as_str(&self) -> &str {
         loop {}
     }
@@ -387,60 +267,6 @@ where
 fn path_and_query(route: &Route) -> PathAndQuery {
     loop {}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #[macro_export]
 macro_rules! path {
@@ -486,24 +312,6 @@ macro_rules! __internal_path {
         $crate ::path(__StaticPath) }
     };
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 fn _path_macro_compile_fail() {}
 mod internal {

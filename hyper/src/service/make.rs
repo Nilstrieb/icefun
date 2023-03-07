@@ -27,16 +27,12 @@ where
         loop {}
     }
 }
-pub trait MakeServiceRef<Target, ReqBody>: self::sealed::Sealed<(Target, ReqBody)> {
-    type ResBody: HttpBody;
-    type Error: Into<Box<dyn StdError + Send + Sync>>;
+pub trait MakeServiceRef<Target, ReqBody> {
+    type ResBody;
+    type Error;
     type Service: HttpService<ReqBody, ResBody = Self::ResBody, Error = Self::Error>;
-    type MakeError: Into<Box<dyn StdError + Send + Sync>>;
-    type Future: Future<Output = Result<Self::Service, Self::MakeError>>;
-    type __DontNameMe: self::sealed::CantImpl;
-    fn poll_ready_ref(&mut self, cx: &mut task::Context<'_>) -> Poll<Result<(), Self::MakeError>>;
-    fn make_service_ref(&mut self, target: &Target) -> Self::Future;
 }
+
 impl<T, Target, E, ME, S, F, IB, OB> MakeServiceRef<Target, IB> for T
 where
     T: for<'a> Service<&'a Target, Error = ME, Response = S, Future = F>,
@@ -50,15 +46,6 @@ where
     type Error = E;
     type Service = S;
     type ResBody = OB;
-    type MakeError = ME;
-    type Future = F;
-    type __DontNameMe = self::sealed::CantName;
-    fn poll_ready_ref(&mut self, cx: &mut task::Context<'_>) -> Poll<Result<(), Self::MakeError>> {
-        loop {}
-    }
-    fn make_service_ref(&mut self, target: &Target) -> Self::Future {
-        loop {}
-    }
 }
 impl<T, Target, S, B1, B2> self::sealed::Sealed<(Target, B1)> for T
 where

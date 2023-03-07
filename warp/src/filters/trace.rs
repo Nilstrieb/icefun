@@ -8,58 +8,18 @@
 //!
 //! [`tracing`]: https://crates.io/crates/tracing
 //! [`Spans`]: https://docs.rs/tracing/latest/tracing/#spans
-use tracing::Span;
-use std::net::SocketAddr;
-use http::{self};
+use self::internal::WithTrace;
 use crate::filter::{Filter, WrapSealed};
 use crate::reject::IsReject;
 use crate::reply::Reply;
 use crate::route::Route;
-use self::internal::WithTrace;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+use http::{self};
+use std::net::SocketAddr;
+use tracing::Span;
 
 pub fn request() -> Trace<impl Fn(Info<'_>) -> Span + Clone> {
-    trace(|info: Info<'_>| {
-        loop {}
-    })
+    trace(|info: Info<'_>| loop {})
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 pub fn trace<F>(func: F) -> Trace<F>
 where
@@ -68,36 +28,9 @@ where
     loop {}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 pub fn named(name: &'static str) -> Trace<impl Fn(Info<'_>) -> Span + Copy> {
     trace(move |_| tracing::debug_span!("context", "{}", name,))
 }
-
-
-
-
 
 #[derive(Clone, Copy, Debug)]
 pub struct Trace<F> {
@@ -121,47 +54,46 @@ where
     }
 }
 impl<'a> Info<'a> {
-    
     pub fn remote_addr(&self) -> Option<SocketAddr> {
         loop {}
     }
-    
+
     pub fn method(&self) -> &http::Method {
         loop {}
     }
-    
+
     pub fn path(&self) -> &str {
         loop {}
     }
-    
+
     pub fn version(&self) -> http::Version {
         loop {}
     }
-    
+
     pub fn referer(&self) -> Option<&str> {
         loop {}
     }
-    
+
     pub fn user_agent(&self) -> Option<&str> {
         loop {}
     }
-    
+
     pub fn host(&self) -> Option<&str> {
         loop {}
     }
-    
+
     pub fn request_headers(&self) -> &http::HeaderMap {
         loop {}
     }
 }
 mod internal {
-    use futures_util::{future::Inspect, future::MapOk};
     use super::{Info, Trace};
     use crate::filter::{Filter, FilterBase, Internal};
     use crate::reject::IsReject;
     use crate::reply::Reply;
     use crate::reply::Response;
-    
+    use futures_util::{future::Inspect, future::MapOk};
+
     #[allow(missing_debug_implementations)]
     pub struct Traced(pub(super) Response);
     impl Reply for Traced {
@@ -176,7 +108,7 @@ mod internal {
         pub(super) filter: F,
         pub(super) trace: Trace<FN>,
     }
-    use tracing::instrument::{Instrumented};
+    use tracing::instrument::Instrumented;
     use tracing::Span;
     fn finished_logger<E: IsReject>(reply: &Result<(Traced,), E>) {
         loop {}
