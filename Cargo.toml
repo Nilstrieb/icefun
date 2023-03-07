@@ -10,3 +10,8 @@ futures = "0"
 hyper = { version = "0", default-features = false }
 tokio = { version = "1", default-features = false }
 warp = { version = "0", default-features = false }
+
+
+[patch.crates-io]
+warp = { path = "./warp" }
+hyper = { path = "./hyper" }
