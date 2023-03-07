@@ -52,7 +52,7 @@ where
         UpgradeableConnection<I, S, E>,
         fn(Pin<&mut UpgradeableConnection<I, S, E>>),
     >;
-    fn watch(&self, conn: UpgradeableConnection<I, S, E>) -> Self::Future {
+    fn watch(&self) -> Self::Future {
         loop {}
     }
 }

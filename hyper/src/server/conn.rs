@@ -170,10 +170,8 @@ mod upgrades {
     #[must_use = "futures do nothing unless polled"]
     #[allow(missing_debug_implementations)]
     pub struct UpgradeableConnection<T, S, E>
-    where
-        S: HttpService<Body>,
     {
-        pub(super) inner: Connection<T, S, E>,
+        pub(super) inner: (T, S, E),
     }
     impl<I, B, S, E> UpgradeableConnection<I, S, E>
     where

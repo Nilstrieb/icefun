@@ -21,15 +21,21 @@ pin_project! {
     " `Server` is a `Future` mapping a bound listener with a set of service"] #[doc =
     " handlers. It is built using the [`Builder`](Builder), and the future"] #[doc =
     " completes when the server has been shutdown. It should be run by an"] #[doc =
-    " `Executor`."] pub struct Server < I, S, E = Exec > { #[pin] incoming : I,
-    make_service : S, protocol : Http_ < E >, }
+    " `Executor`."]
+    
+    pub struct Server < I, S, E = Exec > {
+        
+        #[pin] incoming : I,
+        make_service : S,
+        protocol : Http_ < E >,
+    }
 }
 /// A builder for a [`Server`](Server).
 #[derive(Debug)]
 #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
 pub struct Builder<I, E = Exec> {
     incoming: I,
-    protocol: Http_<E>,
+    protocol: E,
 }
 #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
 impl<I> Server<I, ()> {
@@ -50,7 +56,7 @@ impl Server<AddrIncoming, ()> {
     ///
     /// This method will panic if binding to the address fails. For a method
     /// to bind to an address and return a `Result`, see `Server::try_bind`.
-    pub fn bind(addr: &SocketAddr) -> Builder<AddrIncoming> {
+    pub fn bind() -> Builder<AddrIncoming> {
         loop {}
     }
 }
@@ -161,15 +167,14 @@ impl<I, E> Builder<I, E> {
     pub fn serve<S, B>(self, _: S) -> Server<I, S>
     where
         I: Accept,
-        I::Error: Into<Box<dyn StdError + Send + Sync>>,
         S: MakeServiceRef<I::Conn, Body, ResBody = B>,
     {
         loop {}
     }
 }
-pub trait Watcher<I, S: HttpService<Body>, E>: Clone {
-    type Future: Future<Output = crate::Result<()>>;
-    fn watch(&self, conn: UpgradeableConnection<I, S, E>) -> Self::Future;
+pub trait Watcher<I, S, E>: Clone {
+    type Future;
+    fn watch(&self) -> Self::Future;
 }
 #[allow(missing_debug_implementations)]
 #[derive(Copy, Clone)]
@@ -183,7 +188,7 @@ where
     <S::ResBody as HttpBody>::Error: Into<Box<dyn StdError + Send + Sync>>,
 {
     type Future = UpgradeableConnection<I, S, E>;
-    fn watch(&self, conn: UpgradeableConnection<I, S, E>) -> Self::Future {
+    fn watch(&self) -> Self::Future {
         loop {}
     }
 }
@@ -197,14 +202,26 @@ pub(crate) mod new_svc {
     use crate::service::HttpService;
     use pin_project_lite::pin_project;
     pin_project! {
-        #[allow(missing_debug_implementations)] pub struct NewSvcTask < I, N, S :
-        HttpService < Body >, E, W : Watcher < I, S, E >> { #[pin] state : State < I, N,
-        S, E, W >, }
+        #[allow(missing_debug_implementations)] 
+        
+        pub struct NewSvcTask < I, N, S : HttpService < Body >, E, W : Watcher < I, S, E >> {
+            
+            #[pin] 
+            state : State <I, S, E, W >,
+
+            a: (N)
+    
+     }
     }
     pin_project! {
-        #[project = StateProj] pub (super) enum State < I, N, S : HttpService < Body >,
-        E, W : Watcher < I, S, E >> { Connecting { #[pin] connecting : Connecting < I, N,
-        E >, watcher : W, }, Connected { #[pin] future : W::Future, }, }
+        #[project = StateProj]
+        
+        pub (super) enum State <I, S : HttpService < Body >, E, W : Watcher < I, S, E >> {
+            
+            Connecting { a: (I, S, W, E), },
+        
+            Connected { #[pin] future : W::Future, },
+        }
     }
     impl<I, N, S: HttpService<Body>, E, W: Watcher<I, S, E>> NewSvcTask<I, N, S, E, W> {
         pub(super) fn new(connecting: Connecting<I, N, E>, watcher: W) -> Self {
