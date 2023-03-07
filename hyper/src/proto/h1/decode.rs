@@ -13,10 +13,10 @@ use super::DecodedLength;
 
 use self::Kind::{Chunked, Eof, Length};
 
-/// Decoders to handle different Transfer-Encodings.
-///
-/// If a message body does not include a Transfer-Encoding, it *should*
-/// include a Content-Length header.
+
+
+
+
 #[derive(Clone, PartialEq)]
 pub(crate) struct Decoder {
     kind: Kind,
@@ -24,26 +24,26 @@ pub(crate) struct Decoder {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum Kind {
-    /// A Reader used when a Content-Length header is passed with a positive integer.
+    
     Length(u64),
-    /// A Reader used when Transfer-Encoding is `chunked`.
+    
     Chunked(ChunkedState, u64),
-    /// A Reader used for responses that don't indicate a length or chunked.
-    ///
-    /// The bool tracks when EOF is seen on the transport.
-    ///
-    /// Note: This should only used for `Response`s. It is illegal for a
-    /// `Request` to be made with both `Content-Length` and
-    /// `Transfer-Encoding: chunked` missing, as explained from the spec:
-    ///
-    /// > If a Transfer-Encoding header field is present in a response and
-    /// > the chunked transfer coding is not the final encoding, the
-    /// > message body length is determined by reading the connection until
-    /// > it is closed by the server.  If a Transfer-Encoding header field
-    /// > is present in a request and the chunked transfer coding is not
-    /// > the final encoding, the message body length cannot be determined
-    /// > reliably; the server MUST respond with the 400 (Bad Request)
-    /// > status code and then close the connection.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     Eof(bool),
 }
 

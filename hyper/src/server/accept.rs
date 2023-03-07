@@ -13,24 +13,24 @@ use crate::common::{
     task::{self, Poll},
     Pin,
 };
-/// Asynchronously accept incoming connections.
+
 pub trait Accept {
-    /// The connection type that can be accepted.
+    
     type Conn;
-    /// The error type that can occur when accepting a connection.
+    
     type Error;
-    /// Poll to accept the next connection.
+    
     fn poll_accept(
         self: Pin<&mut Self>,
         cx: &mut task::Context<'_>,
     ) -> Poll<Option<Result<Self::Conn, Self::Error>>>;
 }
-/// Adapt a `Stream` of incoming connections into an `Accept`.
-///
-/// # Optional
-///
-/// This function requires enabling the `stream` feature in your
-/// `Cargo.toml`.
+
+
+
+
+
+
 #[cfg(feature = "stream")]
 pub fn from_stream<S, IO, E>(stream: S) -> impl Accept<Conn = IO, Error = E>
 where

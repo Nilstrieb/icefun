@@ -19,7 +19,7 @@ cfg_client! {
 cfg_server! {
     pub (crate) mod server; pub (crate) use self::server::Server;
 }
-/// Default initial stream window size defined in HTTP2 spec.
+
 pub(crate) const SPEC_WINDOW_SIZE: u32 = 65_535;
 fn strip_connection_headers(headers: &mut HeaderMap, is_request: bool) {
     loop {}

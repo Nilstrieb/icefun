@@ -7,9 +7,9 @@ use libc::{c_int, size_t};
 use super::task::{hyper_context, hyper_task, hyper_task_return_type, AsTaskType};
 use super::{UserDataPointer, HYPER_ITER_CONTINUE};
 use crate::body::{Body, Bytes, HttpBody as _};
-/// A streaming HTTP body.
+
 pub(crate) struct hyper_body(pub(super) Body);
-/// A buffer of bytes that is sent or received on a `hyper_body`.
+
 pub(crate) struct hyper_buf(pub(crate) Bytes);
 pub(crate) struct UserBody {
     data_func: hyper_body_data_callback,
@@ -101,7 +101,7 @@ impl UserBody {
         loop {}
     }
 }
-/// cbindgen:ignore
+
 extern "C" fn data_noop(
     _userdata: *mut c_void,
     _: *mut hyper_context<'_>,

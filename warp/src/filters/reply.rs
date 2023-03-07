@@ -24,24 +24,24 @@ use http::header::{HeaderMap, HeaderName, HeaderValue};
 use self::sealed::{WithDefaultHeader_, WithHeader_, WithHeaders_};
 use crate::filter::{Filter, Map, WrapSealed};
 use crate::reply::Reply;
-/// Wrap a [`Filter`](crate::Filter) that adds a header to the reply.
-///
-/// # Note
-///
-/// This **only** adds a header if the underlying filter is successful, and
-/// returns a [`Reply`](Reply). If the underlying filter was rejected, the
-/// header is not added.
-///
-/// # Example
-///
-/// ```
-/// use warp::Filter;
-///
-/// // Always set `foo: bar` header.
-/// let route = warp::any()
-///     .map(warp::reply)
-///     .with(warp::reply::with::header("foo", "bar"));
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn header<K, V>(name: K, value: V) -> WithHeader
 where
     HeaderName: TryFrom<K>,
@@ -51,51 +51,51 @@ where
 {
     loop {}
 }
-/// Wrap a [`Filter`](crate::Filter) that adds multiple headers to the reply.
-///
-/// # Note
-///
-/// This **only** adds a header if the underlying filter is successful, and
-/// returns a [`Reply`](Reply). If the underlying filter was rejected, the
-/// header is not added.
-///
-/// # Example
-///
-/// ```
-/// use warp::http::header::{HeaderMap, HeaderValue};
-/// use warp::Filter;
-///
-/// let mut headers = HeaderMap::new();
-/// headers.insert("server", HeaderValue::from_static("wee/0"));
-/// headers.insert("foo", HeaderValue::from_static("bar"));
-///
-/// // Always set `server: wee/0` and `foo: bar` headers.
-/// let route = warp::any()
-///     .map(warp::reply)
-///     .with(warp::reply::with::headers(headers));
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn headers(headers: HeaderMap) -> WithHeaders {
     loop {}
 }
-/// Wrap a [`Filter`](crate::Filter) that adds a header to the reply, if they
-/// aren't already set.
-///
-/// # Note
-///
-/// This **only** adds a header if the underlying filter is successful, and
-/// returns a [`Reply`](Reply). If the underlying filter was rejected, the
-/// header is not added.
-///
-/// # Example
-///
-/// ```
-/// use warp::Filter;
-///
-/// // Set `server: warp` if not already set.
-/// let route = warp::any()
-///     .map(warp::reply)
-///     .with(warp::reply::with::default_header("server", "warp"));
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn default_header<K, V>(name: K, value: V) -> WithDefaultHeader
 where
     HeaderName: TryFrom<K>,
@@ -105,7 +105,7 @@ where
 {
     loop {}
 }
-/// Wrap a `Filter` to always set a header.
+
 #[derive(Clone, Debug)]
 pub struct WithHeader {
     name: HeaderName,
@@ -121,7 +121,7 @@ where
         loop {}
     }
 }
-/// Wrap a `Filter` to always set multiple headers.
+
 #[derive(Clone, Debug)]
 pub struct WithHeaders {
     headers: Arc<HeaderMap>,
@@ -136,7 +136,7 @@ where
         loop {}
     }
 }
-/// Wrap a `Filter` to set a header if it is not already set.
+
 #[derive(Clone, Debug)]
 pub struct WithDefaultHeader {
     name: HeaderName,

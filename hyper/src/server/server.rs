@@ -29,7 +29,7 @@ pin_project! {
         protocol : Http_ < E >,
     }
 }
-/// A builder for a [`Server`](Server).
+
 #[derive(Debug)]
 #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
 pub struct Builder<I, E = Exec> {
@@ -38,7 +38,7 @@ pub struct Builder<I, E = Exec> {
 }
 #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
 impl<I> Server<I, ()> {
-    /// Starts a [`Builder`](Builder) with the provided incoming stream.
+    
     pub fn builder(incoming: I) -> Builder<I> {
         loop {}
     }
@@ -49,12 +49,12 @@ impl<I> Server<I, ()> {
     doc(cfg(all(feature = "tcp", any(feature = "http1", feature = "http2"))))
 )]
 impl Server<AddrIncoming, ()> {
-    /// Binds to the provided address, and returns a [`Builder`](Builder).
-    ///
-    /// # Panics
-    ///
-    /// This method will panic if binding to the address fails. For a method
-    /// to bind to an address and return a `Result`, see `Server::try_bind`.
+    
+    
+    
+    
+    
+    
     pub fn bind() -> Builder<AddrIncoming> {
         loop {}
     }
@@ -71,42 +71,42 @@ where
     B::Error: Into<Box<dyn StdError + Send + Sync>>,
     E: ConnStreamExec<<S::Service as HttpService<Body>>::Future, B>,
 {
-    /// Prepares a server to handle graceful shutdown when the provided future
-    /// completes.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # fn main() {}
-    /// # #[cfg(feature = "tcp")]
-    /// # async fn run() {
-    /// # use hyper::{Body, Response, Server, Error};
-    /// # use hyper::service::{make_service_fn, service_fn};
-    /// # let make_service = make_service_fn(|_| async {
-    /// #     Ok::<_, Error>(service_fn(|_req| async {
-    /// #         Ok::<_, Error>(Response::new(Body::from("Hello World")))
-    /// #     }))
-    /// # });
-    /// // Make a server from the previous examples...
-    /// let server = Server::bind(&([127, 0, 0, 1], 3000).into())
-    ///     .serve(make_service);
-    ///
-    /// // Prepare some signal for when the server should start shutting down...
-    /// let (tx, rx) = tokio::sync::oneshot::channel::<()>();
-    /// let graceful = server
-    ///     .with_graceful_shutdown(async {
-    ///         rx.await.ok();
-    ///     });
-    ///
-    /// // Await the `server` receiving the signal...
-    /// if let Err(e) = graceful.await {
-    ///     eprintln!("server error: {}", e);
-    /// }
-    ///
-    /// // And later, trigger the signal by calling `tx.send(())`.
-    /// let _ = tx.send(());
-    /// # }
-    /// ```
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     fn poll_next_(
         self: Pin<&mut Self>,
@@ -148,7 +148,7 @@ impl<I, E> Builder<I, E> {
         loop {}
     }
 
-    ///
+    
     pub fn serve<S, B>(self, _: S) -> Server<I, S>
     where
         I: Accept,

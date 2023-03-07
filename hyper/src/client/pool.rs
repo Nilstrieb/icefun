@@ -17,29 +17,29 @@ pub(super) struct Pool<T> {
 }
 pub(super) trait Poolable: Unpin + Send + Sized + 'static {
     fn is_open(&self) -> bool;
-    /// Reserve this connection.
-    ///
-    /// Allows for HTTP/2 to return a shared reservation.
+    
+    
+    
     fn reserve(self) -> Reservation<Self>;
     fn can_share(&self) -> bool;
 }
-/// When checking out a pooled connection, it might be that the connection
-/// only supports a single reservation, or it might be usable for many.
-///
-/// Specifically, HTTP/1 requires a unique reservation, but HTTP/2 can be
-/// used for multiple requests.
+
+
+
+
+
 #[allow(missing_debug_implementations)]
 pub(super) enum Reservation<T> {
-    /// This connection could be used multiple times, the first one will be
-    /// reinserted into the `idle` pool, and the second will be given to
-    /// the `Checkout`.
+    
+    
+    
     #[cfg(feature = "http2")]
     Shared(T, T),
-    /// This connection requires unique access. It will be returned after
-    /// use is complete.
+    
+    
     Unique(T),
 }
-/// Simple type alias in case the key type needs to be adjusted.
+
 pub(super) type Key = (http::uri::Scheme, http::uri::Authority);
 struct PoolInner<T> {
     connecting: HashSet<Key>,
@@ -76,13 +76,13 @@ impl<T> Pool<T> {
     }
 }
 impl<T: Poolable> Pool<T> {
-    /// Returns a `Checkout` which is a future that resolves if an idle
-    /// connection becomes available.
+    
+    
     pub(super) fn checkout(&self, key: Key) -> Checkout<T> {
         loop {}
     }
-    /// Ensure that there is only ever 1 connecting task for HTTP/2
-    /// connections. This does nothing for HTTP/1.
+    
+    
     pub(super) fn connecting(&self, key: &Key, ver: Ver) -> Option<Connecting<T>> {
         loop {}
     }
@@ -102,7 +102,7 @@ impl<T: Poolable> Pool<T> {
         loop {}
     }
 }
-/// Pop off this list, looking for a usable connection that hasn't expired.
+
 struct IdlePopper<'a, T> {
     key: &'a Key,
     list: &'a mut Vec<Idle<T>>,
@@ -116,8 +116,8 @@ impl<T: Poolable> PoolInner<T> {
     fn put(&mut self, key: Key, value: T, __pool_ref: &Arc<Mutex<PoolInner<T>>>) {
         loop {}
     }
-    /// A `Connecting` task is complete. Not necessarily successfully,
-    /// but the lock is going away, so clean up.
+    
+    
     fn connected(&mut self, key: &Key) {
         loop {}
     }
@@ -127,17 +127,17 @@ impl<T: Poolable> PoolInner<T> {
     }
 }
 impl<T> PoolInner<T> {
-    /// Any `FutureResponse`s that were created will have made a `Checkout`,
-    /// and possibly inserted into the pool that it is waiting for an idle
-    /// connection. If a user ever dropped that future, we need to clean out
-    /// those parked senders.
+    
+    
+    
+    
     fn clean_waiters(&mut self, key: &Key) {
         loop {}
     }
 }
 #[cfg(feature = "runtime")]
 impl<T: Poolable> PoolInner<T> {
-    /// This should *only* be called by the IdleTask
+    
     fn clear_expired(&mut self) {
         loop {}
     }
@@ -147,7 +147,7 @@ impl<T> Clone for Pool<T> {
         loop {}
     }
 }
-/// A wrapped poolable value that tries to reinsert to the Pool on Drop.
+
 pub(super) struct Pooled<T: Poolable> {
     value: Option<T>,
     is_reused: bool,
@@ -283,7 +283,7 @@ mod tests {
     use std::time::Duration;
     use super::{Connecting, Key, Pool, Poolable, Reservation, WeakOpt};
     use crate::common::{exec::Exec, task, Future, Pin};
-    /// Test unique reservations.
+    
     #[derive(Debug, PartialEq, Eq)]
     struct Uniq<T>(T);
     impl<T: Send + 'static + Unpin> Poolable for Uniq<T> {
@@ -313,7 +313,7 @@ mod tests {
     async fn test_pool_checkout_smoke() {
         loop {}
     }
-    /// Helper to check if the future is ready after polling once.
+    
     struct PollOnce<'a, F>(&'a mut F);
     impl<F, T, U> Future for PollOnce<'_, F>
     where

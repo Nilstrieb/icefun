@@ -13,38 +13,38 @@ use super::error::hyper_code;
 use super::UserDataPointer;
 type BoxFuture<T> = Pin<Box<dyn Future<Output = T> + Send>>;
 type BoxAny = Box<dyn AsTaskType + Send + Sync>;
-/// Return in a poll function to indicate it was ready.
+
 pub(crate) const HYPER_POLL_READY: c_int = 0;
-/// Return in a poll function to indicate it is still pending.
-///
-/// The passed in `hyper_waker` should be registered to wake up the task at
-/// some later point.
+
+
+
+
 pub(crate) const HYPER_POLL_PENDING: c_int = 1;
-/// Return in a poll function indicate an error.
+
 pub(crate) const HYPER_POLL_ERROR: c_int = 3;
-/// A task executor for `hyper_task`s.
+
 pub(crate) struct hyper_executor {
-    /// The executor of all task futures.
-    ///
-    /// There should never be contention on the mutex, as it is only locked
-    /// to drive the futures. However, we cannot guarantee proper usage from
-    /// `hyper_executor_poll()`, which in C could potentially be called inside
-    /// one of the stored futures. The mutex isn't re-entrant, so doing so
-    /// would result in a deadlock, but that's better than data corruption.
+    
+    
+    
+    
+    
+    
+    
     driver: Mutex<FuturesUnordered<TaskFuture>>,
-    /// The queue of futures that need to be pushed into the `driver`.
-    ///
-    /// This is has a separate mutex since `spawn` could be called from inside
-    /// a future, which would mean the driver's mutex is already locked.
+    
+    
+    
+    
     spawn_queue: Mutex<Vec<TaskFuture>>,
-    /// This is used to track when a future calls `wake` while we are within
-    /// `hyper_executor::poll_next`.
+    
+    
     is_woken: Arc<ExecWaker>,
 }
 #[derive(Clone)]
 pub(crate) struct WeakExec(Weak<hyper_executor>);
 struct ExecWaker(AtomicBool);
-/// An async task.
+
 pub(crate) struct hyper_task {
     future: BoxFuture<BoxAny>,
     output: Option<BoxAny>,
@@ -53,24 +53,24 @@ pub(crate) struct hyper_task {
 struct TaskFuture {
     task: Option<Box<hyper_task>>,
 }
-/// An async context for a task that contains the related waker.
+
 pub(crate) struct hyper_context<'a>(Context<'a>);
-/// A waker that is saved and used to waken a pending task.
+
 pub(crate) struct hyper_waker {
     waker: std::task::Waker,
 }
-/// A descriptor for what type a `hyper_task` value is.
+
 #[repr(C)]
 pub(crate) enum hyper_task_return_type {
-    /// The value of this task is null (does not imply an error).
+    
     HYPER_TASK_EMPTY,
-    /// The value of this task is `hyper_error *`.
+    
     HYPER_TASK_ERROR,
-    /// The value of this task is `hyper_clientconn *`.
+    
     HYPER_TASK_CLIENTCONN,
-    /// The value of this task is `hyper_response *`.
+    
     HYPER_TASK_RESPONSE,
-    /// The value of this task is `hyper_buf *`.
+    
     HYPER_TASK_BUF,
 }
 pub(crate) unsafe trait AsTaskType {

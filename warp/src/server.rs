@@ -16,7 +16,7 @@ use crate::filter::Filter;
 use crate::reject::IsReject;
 use crate::reply::Reply;
 use crate::transport::Transport;
-/// Create a `Server` with the provided `Filter`.
+
 pub fn serve<F>(filter: F) -> Server<F>
 where
     F: Filter + Clone + Send + Sync + 'static,
@@ -25,15 +25,15 @@ where
 {
     loop {}
 }
-/// A Warp Server ready to filter requests.
+
 #[derive(Debug)]
 pub struct Server<F> {
     pipeline: bool,
     filter: F,
 }
-/// A Warp Server ready to filter requests over TLS.
-///
-/// *This type requires the `"tls"` feature.*
+
+
+
 #[cfg(feature = "tls")]
 pub struct TlsServer<F> {
     server: Server<F>,
@@ -92,14 +92,14 @@ where
     <F::Future as TryFuture>::Ok: Reply,
     <F::Future as TryFuture>::Error: IsReject,
 {
-    /// Run this `Server` forever on the current thread.
+    
     pub async fn run(self, addr: impl Into<SocketAddr>) {
         loop {}
     }
-    /// Run this `Server` forever on the current thread with a specific stream
-    /// of incoming connections.
-    ///
-    /// This can be used for Unix Domain Sockets, or TLS, etc.
+    
+    
+    
+    
     pub async fn run_incoming<I>(self, incoming: I)
     where
         I: TryStream + Send,
@@ -108,12 +108,12 @@ where
     {
         loop {}
     }
-    /// Bind to a socket address, returning a `Future` that can be
-    /// executed on the current runtime.
-    ///
-    /// # Panics
-    ///
-    /// Panics if we are unable to bind to the provided address.
+    
+    
+    
+    
+    
+    
     pub fn bind(
         self,
         addr: impl Into<SocketAddr> + 'static,
@@ -121,22 +121,22 @@ where
         let (_, fut) = self.bind_ephemeral(addr);
         fut
     }
-    /// Bind to a socket address, returning a `Future` that can be
-    /// executed on any runtime.
-    ///
-    /// In case we are unable to bind to the specified address, resolves to an
-    /// error and logs the reason.
+    
+    
+    
+    
+    
     pub async fn try_bind(self, addr: impl Into<SocketAddr>) {
         loop {}
     }
-    /// Bind to a possibly ephemeral socket address.
-    ///
-    /// Returns the bound address and a `Future` that can be executed on
-    /// the current runtime.
-    ///
-    /// # Panics
-    ///
-    /// Panics if we are unable to bind to the provided address.
+    
+    
+    
+    
+    
+    
+    
+    
     pub fn bind_ephemeral(
         self,
         addr: impl Into<SocketAddr>,
@@ -150,13 +150,13 @@ where
             });
         (addr, srv)
     }
-    /// Tried to bind a possibly ephemeral socket address.
-    ///
-    /// Returns a `Result` which fails in case we are unable to bind with the
-    /// underlying error.
-    ///
-    /// Returns the bound address and a `Future` that can be executed on
-    /// the current runtime.
+    
+    
+    
+    
+    
+    
+    
     pub fn try_bind_ephemeral(
         self,
         addr: impl Into<SocketAddr>,
@@ -171,44 +171,44 @@ where
             });
         Ok((addr, srv))
     }
-    /// Create a server with graceful shutdown signal.
-    ///
-    /// When the signal completes, the server will start the graceful shutdown
-    /// process.
-    ///
-    /// Returns the bound address and a `Future` that can be executed on
-    /// the current runtime.
-    ///
-    /// # Example
-    ///
-    /// ```no_run
-    /// use warp::Filter;
-    /// use futures_util::future::TryFutureExt;
-    /// use tokio::sync::oneshot;
-    ///
-    /// # fn main() {
-    /// let routes = warp::any()
-    ///     .map(|| "Hello, World!");
-    ///
-    /// let (tx, rx) = oneshot::channel();
-    ///
-    /// let (addr, server) = warp::serve(routes)
-    ///     .bind_with_graceful_shutdown(([127, 0, 0, 1], 3030), async {
-    ///          rx.await.ok();
-    ///     });
-    ///
-    /// // Spawn the server into a runtime
-    /// tokio::task::spawn(server);
-    ///
-    /// Create a server with graceful shutdown signal.
-    ///
-    /// When the signal completes, the server will start the graceful shutdown
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
-    /// Setup this `Server` with a specific stream of incoming connections.
-    ///
-    /// This can be used for Unix Domain Sockets, or TLS, etc.
-    ///
-    /// Returns a `Future` that can be executed on the current runtime.
+    
+    
+    
+    
+    
     pub fn serve_incoming<I>(self, incoming: I) -> impl Future<Output = ()>
     where
         I: TryStream + Send,
@@ -219,15 +219,15 @@ where
         self.serve_incoming2(incoming)
             .instrument(tracing::info_span!("Server::serve_incoming"))
     }
-    /// Setup this `Server` with a specific stream of incoming connections and a
-    /// signal to initiate graceful shutdown.
-    ///
-    /// This can be used for Unix Domain Sockets, or TLS, etc.
-    ///
-    /// When the signal completes, the server will start the graceful shutdown
-    /// process.
-    ///
-    /// Returns a `Future` that can be executed on the current runtime.
+    
+    
+    
+    
+    
+    
+    
+    
+    
     pub fn serve_incoming_with_graceful_shutdown<I>(
         self,
         incoming: I,
@@ -268,9 +268,9 @@ where
     pub fn unstable_pipeline(mut self) -> Self {
         loop {}
     }
-    /// Configure a server to use TLS.
-    ///
-    /// *This function requires the `"tls"` feature.*
+    
+    
+    
     #[cfg(feature = "tls")]
     pub fn tls(self) -> TlsServer<F> {
         loop {}
@@ -283,69 +283,69 @@ where
     <F::Future as TryFuture>::Ok: Reply,
     <F::Future as TryFuture>::Error: IsReject,
 {
-    /// Specify the file path to read the private key.
-    ///
-    /// *This function requires the `"tls"` feature.*
+    
+    
+    
     pub fn key_path(self, path: impl AsRef<Path>) -> Self {
         loop {}
     }
-    /// Specify the file path to read the certificate.
-    ///
-    /// *This function requires the `"tls"` feature.*
+    
+    
+    
     pub fn cert_path(self, path: impl AsRef<Path>) -> Self {
         loop {}
     }
-    /// Specify the file path to read the trust anchor for optional client authentication.
-    ///
-    /// Anonymous and authenticated clients will be accepted. If no trust anchor is provided by any
-    /// of the `client_auth_` methods, then client authentication is disabled by default.
-    ///
-    /// *This function requires the `"tls"` feature.*
+    
+    
+    
+    
+    
+    
     pub fn client_auth_optional_path(self, path: impl AsRef<Path>) -> Self {
         loop {}
     }
-    /// Specify the file path to read the trust anchor for required client authentication.
-    ///
-    /// Only authenticated clients will be accepted. If no trust anchor is provided by any of the
-    /// `client_auth_` methods, then client authentication is disabled by default.
-    ///
-    /// *This function requires the `"tls"` feature.*
+    
+    
+    
+    
+    
+    
     pub fn client_auth_required_path(self, path: impl AsRef<Path>) -> Self {
         loop {}
     }
-    /// Specify the in-memory contents of the private key.
-    ///
-    /// *This function requires the `"tls"` feature.*
+    
+    
+    
     pub fn key(self, key: impl AsRef<[u8]>) -> Self {
         loop {}
     }
-    /// Specify the in-memory contents of the certificate.
-    ///
-    /// *This function requires the `"tls"` feature.*
+    
+    
+    
     pub fn cert(self, cert: impl AsRef<[u8]>) -> Self {
         loop {}
     }
-    /// Specify the in-memory contents of the trust anchor for optional client authentication.
-    ///
-    /// Anonymous and authenticated clients will be accepted. If no trust anchor is provided by any
-    /// of the `client_auth_` methods, then client authentication is disabled by default.
-    ///
-    /// *This function requires the `"tls"` feature.*
+    
+    
+    
+    
+    
+    
     pub fn client_auth_optional(self, trust_anchor: impl AsRef<[u8]>) -> Self {
         loop {}
     }
-    /// Specify the in-memory contents of the trust anchor for required client authentication.
-    ///
-    /// Only authenticated clients will be accepted. If no trust anchor is provided by any of the
-    /// `client_auth_` methods, then client authentication is disabled by default.
-    ///
-    /// *This function requires the `"tls"` feature.*
+    
+    
+    
+    
+    
+    
     pub fn client_auth_required(self, trust_anchor: impl AsRef<[u8]>) -> Self {
         loop {}
     }
-    /// Specify the DER-encoded OCSP response.
-    ///
-    /// *This function requires the `"tls"` feature.*
+    
+    
+    
     pub fn ocsp_resp(self, resp: impl AsRef<[u8]>) -> Self {
         loop {}
     }
@@ -355,37 +355,37 @@ where
     {
         loop {}
     }
-    /// Run this `TlsServer` forever on the current thread.
-    ///
-    /// *This function requires the `"tls"` feature.*
+    
+    
+    
     pub async fn run(self, addr: impl Into<SocketAddr>) {
         loop {}
     }
-    /// Bind to a socket address, returning a `Future` that can be
-    /// executed on a runtime.
-    ///
-    /// *This function requires the `"tls"` feature.*
+    
+    
+    
+    
     pub async fn bind(self, addr: impl Into<SocketAddr>) {
         loop {}
     }
-    /// Bind to a possibly ephemeral socket address.
-    ///
-    /// Returns the bound address and a `Future` that can be executed on
-    /// the current runtime.
-    ///
-    /// *This function requires the `"tls"` feature.*
+    
+    
+    
+    
+    
+    
     pub fn bind_ephemeral(
         self,
         addr: impl Into<SocketAddr>,
     ) -> (SocketAddr, impl Future<Output = ()> + 'static) {
         loop {}
     }
-    /// Create a server with graceful shutdown signal.
-    ///
-    /// When the signal completes, the server will start the graceful shutdown
-    /// process.
-    ///
-    /// *This function requires the `"tls"` feature.*
+    
+    
+    
+    
+    
+    
     pub fn bind_with_graceful_shutdown(
         self,
         addr: impl Into<SocketAddr> + 'static,

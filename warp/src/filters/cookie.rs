@@ -9,9 +9,9 @@ use crate::reject::Rejection;
 use std::convert::Infallible;
 use std::str::FromStr;
 
-/// Creates a `Filter` that requires a cookie by name.
-///
-/// If found, extracts the value of the cookie, otherwise rejects.
+
+
+
 pub fn cookie<T>(name: &'static str) -> impl Filter<Extract = One<T>, Error = Rejection> + Copy
 where
     T: FromStr + Send + 'static,
@@ -25,10 +25,10 @@ where
     })
 }
 
-/// Creates a `Filter` that looks for an optional cookie by name.
-///
-/// If found, extracts the value of the cookie, otherwise continues
-/// the request, extracting `None`.
+
+
+
+
 pub fn optional<T>(
     name: &'static str,
 ) -> impl Filter<Extract = One<Option<T>>, Error = Infallible> + Copy

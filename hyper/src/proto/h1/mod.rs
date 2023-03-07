@@ -48,7 +48,7 @@ pub(crate) trait Http1Transaction {
     }
     fn update_date() {}
 }
-/// Result newtype for Http1Transaction::parse.
+
 pub(crate) type ParseResult<T> = Result<Option<ParsedMessage<T>>, crate::error::Parse>;
 #[derive(Debug)]
 pub(crate) struct ParsedMessage<T> {
@@ -77,7 +77,7 @@ pub(crate) struct ParseContext<'a> {
     #[cfg(feature = "ffi")]
     raw_headers: bool,
 }
-/// Passed to Http1Transaction::encode
+
 pub(crate) struct Encode<'a, T> {
     head: &'a mut MessageHead<T>,
     body: Option<BodyLength>,
@@ -86,7 +86,7 @@ pub(crate) struct Encode<'a, T> {
     req_method: &'a mut Option<Method>,
     title_case_headers: bool,
 }
-/// Extra flags that a request "wants", like expect-continue or upgrades.
+
 #[derive(Clone, Copy, Debug)]
 struct Wants(u8);
 impl Wants {

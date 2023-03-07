@@ -1,23 +1,23 @@
-/// HTTP2 Ping usage
-///
-/// hyper uses HTTP2 pings for two purposes:
-///
-/// 1. Adaptive flow control using BDP
-/// 2. Connection keep-alive
-///
-/// Both cases are optional.
-///
-/// # BDP Algorithm
-///
-/// 1. When receiving a DATA frame, if a BDP ping isn't outstanding:
-///   1a. Record current time.
-///   1b. Send a BDP ping.
-/// 2. Increment the number of received bytes.
-/// 3. When the BDP ping ack is received:
-///   3a. Record duration from sent time.
-///   3b. Merge RTT with a running average.
-///   3c. Calculate bdp as bytes/rtt.
-///   3d. If bdp is over 2/3 max, set new max to bdp and update windows.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #[cfg(feature = "runtime")]
 use std::fmt;
 #[cfg(feature = "runtime")]
@@ -43,14 +43,14 @@ pub(super) fn channel(ping_pong: PingPong, config: Config) -> (Recorder, Ponger)
 #[derive(Clone)]
 pub(super) struct Config {
     pub(super) bdp_initial_window: Option<WindowSize>,
-    /// If no frames are received in this amount of time, a PING frame is sent.
+    
     #[cfg(feature = "runtime")]
     pub(super) keep_alive_interval: Option<Duration>,
-    /// After sending a keepalive PING, the connection will be closed if
-    /// a pong is not received in this amount of time.
+    
+    
     #[cfg(feature = "runtime")]
     pub(super) keep_alive_timeout: Duration,
-    /// If true, sends pings even when there are no active streams.
+    
     #[cfg(feature = "runtime")]
     pub(super) keep_alive_while_idle: bool,
 }
@@ -67,41 +67,41 @@ pub(super) struct Ponger {
 struct Shared {
     ping_pong: PingPong,
     ping_sent_at: Option<Instant>,
-    /// If `Some`, bdp is enabled, and this tracks how many bytes have been
-    /// read during the current sample.
+    
+    
     bytes: Option<usize>,
-    /// We delay a variable amount of time between BDP pings. This allows us
-    /// to send less pings as the bandwidth stabilizes.
+    
+    
     next_bdp_at: Option<Instant>,
-    /// If `Some`, keep-alive is enabled, and the Instant is how long ago
-    /// the connection read the last frame.
+    
+    
     #[cfg(feature = "runtime")]
     last_read_at: Option<Instant>,
     #[cfg(feature = "runtime")]
     is_keep_alive_timed_out: bool,
 }
 struct Bdp {
-    /// Current BDP in bytes
+    
     bdp: u32,
-    /// Largest bandwidth we've seen so far.
+    
     max_bandwidth: f64,
-    /// Round trip time in seconds
+    
     rtt: f64,
-    /// Delay the next ping by this amount.
-    ///
-    /// This will change depending on how stable the current bandwidth is.
+    
+    
+    
     ping_delay: Duration,
-    /// The count of ping round trips where BDP has stayed the same.
+    
     stable_count: u32,
 }
 #[cfg(feature = "runtime")]
 struct KeepAlive {
-    /// If no frames are received in this amount of time, a PING frame is sent.
+    
     interval: Duration,
-    /// After sending a keepalive PING, the connection will be closed if
-    /// a pong is not received in this amount of time.
+    
+    
     timeout: Duration,
-    /// If true, sends pings even when there are no active streams.
+    
     while_idle: bool,
     state: KeepAliveState,
     timer: Pin<Box<Sleep>>,
@@ -132,8 +132,8 @@ impl Recorder {
     pub(crate) fn record_non_data(&self) {
         loop {}
     }
-    /// If the incoming stream is already closed, convert self into
-    /// a disabled reporter.
+    
+    
     #[cfg(feature = "client")]
     pub(super) fn for_stream(self, stream: &h2::RecvStream) -> Self {
         loop {}
@@ -167,7 +167,7 @@ impl Shared {
         loop {}
     }
 }
-/// Any higher than this likely will be hitting the TCP flow control.
+
 const BDP_LIMIT: usize = 1024 * 1024 * 16;
 impl Bdp {
     fn calculate(&mut self, bytes: usize, rtt: Duration) -> Option<WindowSize> {

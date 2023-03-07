@@ -14,39 +14,39 @@ use multipart::server::Multipart;
 use crate::filter::{Filter, FilterBase, Internal};
 use crate::reject::{self, Rejection};
 const DEFAULT_FORM_DATA_MAX_LENGTH: u64 = 1024 * 1024 * 2;
-/// A `Filter` to extract a `multipart/form-data` body from a request.
-///
-/// Create with the `warp::multipart::form()` function.
+
+
+
 #[derive(Debug, Clone)]
 pub struct FormOptions {
     max_length: u64,
 }
-/// A `Stream` of multipart/form-data `Part`s.
-///
-/// Extracted with a `warp::multipart::form` filter.
+
+
+
 pub struct FormData {
     inner: Multipart<Cursor<::bytes::Bytes>>,
 }
-/// A single "part" of a multipart/form-data body.
-///
-/// Yielded from the `FormData` stream.
+
+
+
 pub struct Part {
     name: String,
     filename: Option<String>,
     content_type: Option<String>,
     data: Option<Vec<u8>>,
 }
-/// Create a `Filter` to extract a `multipart/form-data` body from a request.
-///
-/// The extracted `FormData` type is a `Stream` of `Part`s, and each `Part`
-/// in turn is a `Stream` of bytes.
+
+
+
+
 pub fn form() -> FormOptions {
     loop {}
 }
 impl FormOptions {
-    /// Set the maximum byte length allowed for this body.
-    ///
-    /// Defaults to 2MB.
+    
+    
+    
     pub fn max_length(mut self, max: u64) -> Self {
         loop {}
     }
@@ -75,23 +75,23 @@ impl Stream for FormData {
     }
 }
 impl Part {
-    /// Get the name of this part.
+    
     pub fn name(&self) -> &str {
         loop {}
     }
-    /// Get the filename of this part, if present.
+    
     pub fn filename(&self) -> Option<&str> {
         loop {}
     }
-    /// Get the content-type of this part, if present.
+    
     pub fn content_type(&self) -> Option<&str> {
         loop {}
     }
-    /// Asynchronously get some of the data for this `Part`.
+    
     pub async fn data(&mut self) -> Option<Result<impl Buf, crate::Error>> {
         loop {}
     }
-    /// Convert this `Part` into a `Stream` of `Buf`s.
+    
     pub fn stream(self) -> impl Stream<Item = Result<impl Buf, crate::Error>> {
         loop {}
     }

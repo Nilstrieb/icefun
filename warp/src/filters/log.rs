@@ -8,23 +8,23 @@ use crate::reject::IsReject;
 use crate::reply::Reply;
 use crate::route::Route;
 use self::internal::WithLog;
-/// Create a wrapping filter with the specified `name` as the `target`.
-///
-/// This uses the default access logging format, and log records produced
-/// will have their `target` set to `name`.
-///
-/// # Example
-///
-/// ```
-/// use warp::Filter;
-///
-/// // If using something like `pretty_env_logger`,
-/// // view logs by setting `RUST_LOG=example::api`.
-/// let log = warp::log("example::api");
-/// let route = warp::any()
-///     .map(warp::reply)
-///     .with(log);
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn log(name: &'static str) -> Log<impl Fn(Info<'_>) + Copy> {
     let func = move |info: Info<'_>| {
         log::info!(
@@ -36,38 +36,38 @@ pub fn log(name: &'static str) -> Log<impl Fn(Info<'_>) + Copy> {
     };
     Log { func }
 }
-/// Create a wrapping filter that receives `warp::log::Info`.
-///
-/// # Example
-///
-/// ```
-/// use warp::Filter;
-///
-/// let log = warp::log::custom(|info| {
-///     // Use a log macro, or slog, or println, or whatever!
-///     eprintln!(
-///         "{} {} {}",
-///         info.method(),
-///         info.path(),
-///         info.status(),
-///     );
-/// });
-/// let route = warp::any()
-///     .map(warp::reply)
-///     .with(log);
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn custom<F>(func: F) -> Log<F>
 where
     F: Fn(Info<'_>),
 {
     loop {}
 }
-/// Decorates a [`Filter`](crate::Filter) to log requests and responses.
+
 #[derive(Clone, Copy, Debug)]
 pub struct Log<F> {
     func: F,
 }
-/// Information about the request/response that can be used to prepare log lines.
+
 #[allow(missing_debug_implementations)]
 pub struct Info<'a> {
     route: &'a Route,
@@ -87,43 +87,43 @@ where
     }
 }
 impl<'a> Info<'a> {
-    /// View the remote `SocketAddr` of the request.
+    
     pub fn remote_addr(&self) -> Option<SocketAddr> {
         loop {}
     }
-    /// View the `http::Method` of the request.
+    
     pub fn method(&self) -> &http::Method {
         loop {}
     }
-    /// View the URI path of the request.
+    
     pub fn path(&self) -> &str {
         loop {}
     }
-    /// View the `http::Version` of the request.
+    
     pub fn version(&self) -> http::Version {
         loop {}
     }
-    /// View the `http::StatusCode` of the response.
+    
     pub fn status(&self) -> http::StatusCode {
         loop {}
     }
-    /// View the referer of the request.
+    
     pub fn referer(&self) -> Option<&str> {
         loop {}
     }
-    /// View the user agent of the request.
+    
     pub fn user_agent(&self) -> Option<&str> {
         loop {}
     }
-    /// View the `Duration` that elapsed for the request.
+    
     pub fn elapsed(&self) -> Duration {
         loop {}
     }
-    /// View the host of the request
+    
     pub fn host(&self) -> Option<&str> {
         loop {}
     }
-    /// Access the full headers of the request
+    
     pub fn request_headers(&self) -> &http::HeaderMap {
         loop {}
     }

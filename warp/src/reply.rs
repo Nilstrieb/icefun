@@ -45,59 +45,59 @@ pub(crate) use self::sealed::Reply_;
 use self::sealed::BoxedReply;
 #[doc(hidden)]
 pub use crate::filters::reply as with;
-/// Response type into which types implementing the `Reply` trait are convertable.
+
 pub type Response = ::http::Response<Body>;
-/// Returns an empty `Reply` with status code `200 OK`.
-///
-/// # Example
-///
-/// ```
-/// use warp::Filter;
-///
-/// // GET /just-ok returns an empty `200 OK`.
-/// let route = warp::path("just-ok")
-///     .map(|| {
-///         println!("got a /just-ok request!");
-///         warp::reply()
-///     });
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #[inline]
 pub fn reply() -> impl Reply {
     StatusCode::OK
 }
-/// Convert the value into a `Reply` with the value encoded as JSON.
-///
-/// The passed value must implement [`Serialize`][ser]. Many
-/// collections do, and custom domain types can have `Serialize` derived.
-///
-/// [ser]: https://serde.rs
-///
-/// # Example
-///
-/// ```
-/// use warp::Filter;
-///
-/// // GET /ids returns a `200 OK` with a JSON array of ids:
-/// // `[1, 3, 7, 13]`
-/// let route = warp::path("ids")
-///     .map(|| {
-///         let our_ids = vec![1, 3, 7, 13];
-///         warp::reply::json(&our_ids)
-///     });
-/// ```
-///
-/// # Note
-///
-/// If a type fails to be serialized into JSON, the error is logged at the
-/// `error` level, and the returned `impl Reply` will be an empty
-/// `500 Internal Server Error` response.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn json<T>(val: &T) -> Json
 where
     T: Serialize,
 {
     loop {}
 }
-/// A JSON formatted reply.
+
 #[allow(missing_debug_implementations)]
 pub struct Json {
     inner: Result<Vec<u8>, ()>,
@@ -116,29 +116,29 @@ impl fmt::Display for ReplyJsonError {
     }
 }
 impl StdError for ReplyJsonError {}
-/// Reply with a body and `content-type` set to `text/html; charset=utf-8`.
-///
-/// # Example
-///
-/// ```
-/// use warp::Filter;
-///
-/// let body = r#"
-/// <html>
-///     <head>
-///         <title>HTML with warp!</title>
-///     </head>
-///     <body>
-///         <h1>warp + HTML = &hearts;</h1>
-///     </body>
-/// </html>
-/// "#;
-///
-/// let route = warp::any()
-///     .map(move || {
-///         warp::reply::html(body)
-///     });
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn html<T>(body: T) -> Html<T>
 where
     Body: From<T>,
@@ -146,7 +146,7 @@ where
 {
     loop {}
 }
-/// An HTML reply.
+
 #[allow(missing_debug_implementations)]
 pub struct Html<T> {
     body: T,
@@ -161,40 +161,40 @@ where
         loop {}
     }
 }
-/// Types that can be converted into a `Response`.
-///
-/// This trait is implemented for the following:
-///
-/// - `http::StatusCode`
-/// - `http::Response<impl Into<hyper::Body>>`
-/// - `String`
-/// - `&'static str`
-///
-/// # Example
-///
-/// ```rust
-/// use warp::{Filter, http::Response};
-///
-/// struct Message {
-///     msg: String
-/// }
-///
-/// impl warp::Reply for Message {
-///     fn into_response(self) -> warp::reply::Response {
-///         Response::new(format!("message: {}", self.msg).into())
-///     }
-/// }
-///
-/// fn handler() -> Message {
-///     Message { msg: "Hello".to_string() }
-/// }
-///
-/// let route = warp::any().map(handler);
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub trait Reply: BoxedReply + Send {
-    /// Converts the given value into a [`Response`].
-    ///
-    /// [`Response`]: type.Response.html
+    
+    
+    
     fn into_response(self) -> Response;
 }
 impl<T: Reply + ?Sized> Reply for Box<T> {
@@ -205,25 +205,25 @@ impl<T: Reply + ?Sized> Reply for Box<T> {
 fn _assert_object_safe() {
     loop {}
 }
-/// Wrap an `impl Reply` to change its `StatusCode`.
-///
-/// # Example
-///
-/// ```
-/// use warp::Filter;
-///
-/// let route = warp::any()
-///     .map(warp::reply)
-///     .map(|reply| {
-///         warp::reply::with_status(reply, warp::http::StatusCode::CREATED)
-///     });
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn with_status<T: Reply>(reply: T, status: StatusCode) -> WithStatus<T> {
     loop {}
 }
-/// Wrap an `impl Reply` to change its `StatusCode`.
-///
-/// Returned by `warp::reply::with_status`.
+
+
+
 #[derive(Debug)]
 pub struct WithStatus<T> {
     reply: T,
@@ -234,19 +234,19 @@ impl<T: Reply> Reply for WithStatus<T> {
         loop {}
     }
 }
-/// Wrap an `impl Reply` to add a header when rendering.
-///
-/// # Example
-///
-/// ```
-/// use warp::Filter;
-///
-/// let route = warp::any()
-///     .map(warp::reply)
-///     .map(|reply| {
-///         warp::reply::with_header(reply, "server", "warp")
-///     });
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn with_header<T: Reply, K, V>(reply: T, name: K, value: V) -> WithHeader<T>
 where
     HeaderName: TryFrom<K>,
@@ -256,9 +256,9 @@ where
 {
     loop {}
 }
-/// Wraps an `impl Reply` and adds a header when rendering.
-///
-/// Returned by `warp::reply::with_header`.
+
+
+
 #[derive(Debug)]
 pub struct WithHeader<T> {
     header: Option<(HeaderName, HeaderValue)>,

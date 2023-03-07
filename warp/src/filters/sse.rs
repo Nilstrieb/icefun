@@ -63,7 +63,7 @@ enum DataType {
     Text(String),
     Json(String),
 }
-/// Server-sent event
+
 #[derive(Default, Debug)]
 pub struct Event {
     id: Option<String>,
@@ -73,33 +73,33 @@ pub struct Event {
     retry: Option<Duration>,
 }
 impl Event {
-    /// Set Server-sent event data
-    /// data field(s) ("data:<content>")
+    
+    
     pub fn data<T: Into<String>>(mut self, data: T) -> Event {
         loop {}
     }
-    /// Set Server-sent event data
-    /// data field(s) ("data:<content>")
+    
+    
     pub fn json_data<T: Serialize>(mut self, data: T) -> Result<Event, Error> {
         loop {}
     }
-    /// Set Server-sent event comment
-    /// Comment field (":<comment-text>")
+    
+    
     pub fn comment<T: Into<String>>(mut self, comment: T) -> Event {
         loop {}
     }
-    /// Set Server-sent event event
-    /// Event name field ("event:<event-name>")
+    
+    
     pub fn event<T: Into<String>>(mut self, event: T) -> Event {
         loop {}
     }
-    /// Set Server-sent event retry
-    /// Retry timeout field ("retry:<timeout>")
+    
+    
     pub fn retry(mut self, duration: Duration) -> Event {
         loop {}
     }
-    /// Set Server-sent event id
-    /// Identifier field ("id:<identifier>")
+    
+    
     pub fn id<T: Into<String>>(mut self, id: T) -> Event {
         loop {}
     }
@@ -109,42 +109,42 @@ impl fmt::Display for Event {
         loop {}
     }
 }
-/// Gets the optional last event id from request.
-/// Typically this identifier represented as number or string.
-///
-/// ```
-/// let app = warp::sse::last_event_id::<u32>();
-///
-/// // The identifier is present
-/// async {
-///     assert_eq!(
-///         warp::test::request()
-///            .header("Last-Event-ID", "12")
-///            .filter(&app)
-///            .await
-///            .unwrap(),
-///         Some(12)
-///     );
-///
-///     // The identifier is missing
-///     assert_eq!(
-///        warp::test::request()
-///            .filter(&app)
-///            .await
-///            .unwrap(),
-///         None
-///     );
-///
-///     // The identifier is not a valid
-///     assert!(
-///        warp::test::request()
-///            .header("Last-Event-ID", "abc")
-///            .filter(&app)
-///            .await
-///            .is_err(),
-///     );
-///};
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn last_event_id<T>() -> impl Filter<
     Extract = One<Option<T>>,
     Error = Rejection,
@@ -154,83 +154,83 @@ where
 {
     header::optional("last-event-id")
 }
-/// Server-sent events reply
-///
-/// This function converts stream of server events into a `Reply` with:
-///
-/// - Status of `200 OK`
-/// - Header `content-type: text/event-stream`
-/// - Header `cache-control: no-cache`.
-///
-/// # Example
-///
-/// ```
-///
-/// use std::time::Duration;
-/// use futures_util::Stream;
-/// use futures_util::stream::iter;
-/// use std::convert::Infallible;
-/// use warp::{Filter, sse::Event};
-/// use serde_derive::Serialize;
-///
-/// #[derive(Serialize)]
-/// struct Msg {
-///     from: u32,
-///     text: String,
-/// }
-///
-/// fn event_stream() -> impl Stream<Item = Result<Event, Infallible>> {
-///         iter(vec![
-///             // Unnamed event with data only
-///             Ok(Event::default().data("payload")),
-///             // Named event with ID and retry timeout
-///             Ok(
-///                 Event::default().data("other message\nwith next line")
-///                 .event("chat")
-///                 .id(1.to_string())
-///                 .retry(Duration::from_millis(15000))
-///             ),
-///             // Event with JSON data
-///             Ok(
-///                 Event::default().id(2.to_string())
-///                 .json_data(Msg {
-///                     from: 2,
-///                     text: "hello".into(),
-///                 }).unwrap(),
-///             )
-///         ])
-/// }
-///
-/// async {
-///     let app = warp::path("sse").and(warp::get()).map(|| {
-///        warp::sse::reply(event_stream())
-///     });
-///
-///     let res = warp::test::request()
-///         .method("GET")
-///         .header("Connection", "Keep-Alive")
-///         .path("/sse")
-///         .reply(&app)
-///         .await
-///         .into_body();
-///
-///     assert_eq!(
-///         res,
-///         r#"data:payload
-///
-/// event:chat
-/// data:other message
-/// data:with next line
-/// id:1
-/// retry:15000
-///
-/// data:{"from":2,"text":"hello"}
-/// id:2
-///
-/// "#
-///     );
-/// };
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn reply<S>(event_stream: S) -> impl Reply
 where
     S: TryStream<Ok = Event> + Send + 'static,
@@ -252,29 +252,29 @@ where
         loop {}
     }
 }
-/// Configure the interval between keep-alive messages, the content
-/// of each message, and the associated stream.
+
+
 #[derive(Debug)]
 pub struct KeepAlive {
     comment_text: Cow<'static, str>,
     max_interval: Duration,
 }
 impl KeepAlive {
-    /// Customize the interval between keep-alive messages.
-    ///
-    /// Default is 15 seconds.
+    
+    
+    
     pub fn interval(mut self, time: Duration) -> Self {
         loop {}
     }
-    /// Customize the text of the keep-alive message.
-    ///
-    /// Default is an empty comment.
+    
+    
+    
     pub fn text(mut self, text: impl Into<Cow<'static, str>>) -> Self {
         loop {}
     }
-    /// Wrap an event stream with keep-alive functionality.
-    ///
-    /// See [`keep_alive`](keep_alive) for more.
+    
+    
+    
     pub fn stream<S>(
         self,
         event_stream: S,
@@ -305,51 +305,51 @@ struct SseKeepAlive<S> {
     #[pin]
     alive_timer: Sleep,
 }
-/// Keeps event source connection alive when no events sent over a some time.
-///
-/// Some proxy servers may drop HTTP connection after a some timeout of inactivity.
-/// This function helps to prevent such behavior by sending comment events every
-/// `keep_interval` of inactivity.
-///
-/// By default the comment is `:` (an empty comment) and the time interval between
-/// events is 15 seconds. Both may be customized using the builder pattern
-/// as shown below.
-///
-/// ```
-/// use std::time::Duration;
-/// use std::convert::Infallible;
-/// use futures_util::StreamExt;
-/// use tokio::time::interval;
-/// use tokio_stream::wrappers::IntervalStream;
-/// use warp::{Filter, Stream, sse::Event};
-///
-/// // create server-sent event
-/// fn sse_counter(counter: u64) ->  Result<Event, Infallible> {
-///     Ok(Event::default().data(counter.to_string()))
-/// }
-///
-/// fn main() {
-///     let routes = warp::path("ticks")
-///         .and(warp::get())
-///         .map(|| {
-///             let mut counter: u64 = 0;
-///             let interval = interval(Duration::from_secs(15));
-///             let stream = IntervalStream::new(interval);
-///             let event_stream = stream.map(move |_| {
-///                 counter += 1;
-///                 sse_counter(counter)
-///             });
-///             // reply using server-sent events
-///             let stream = warp::sse::keep_alive()
-///                 .interval(Duration::from_secs(5))
-///                 .text("thump".to_string())
-///                 .stream(event_stream);
-///             warp::sse::reply(stream)
-///         });
-/// }
-/// ```
-///
-/// See [notes](https://www.w3.org/TR/2009/WD-eventsource-20090421/#notes).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn keep_alive() -> KeepAlive {
     loop {}
 }
@@ -368,7 +368,7 @@ where
 }
 mod sealed {
     use super::*;
-    /// SSE error type
+    
     #[derive(Debug)]
     pub struct SseError;
     impl fmt::Display for SseError {

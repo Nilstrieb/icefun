@@ -64,11 +64,11 @@ where
     pub(crate) fn into_inner(self) -> (I, Bytes, D) {
         loop {}
     }
-    /// Run this dispatcher until HTTP says this connection is done,
-    /// but don't call `AsyncWrite::shutdown` on the underlying IO.
-    ///
-    /// This is useful for old-style HTTP upgrades, but ignores
-    /// newer-style upgrade API.
+    
+    
+    
+    
+    
     pub(crate) fn poll_without_shutdown(
         &mut self,
         cx: &mut task::Context<'_>,
@@ -133,8 +133,8 @@ where
         loop {}
     }
 }
-/// A drop guard to allow a mutable borrow of an Option while being able to
-/// set whether the `Option` should be cleared on drop.
+
+
 struct OptGuard<'a, T>(Pin<&'a mut Option<T>>, bool);
 impl<'a, T> OptGuard<'a, T> {
     fn new(pin: Pin<&'a mut Option<T>>) -> Self {

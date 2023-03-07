@@ -3,7 +3,7 @@ use std::{io};
 use bytes::{Bytes};
 use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
 use crate::common::{task, Pin, Poll};
-/// Combine a buffer with an IO, rewinding reads to use the buffer.
+
 #[derive(Debug)]
 pub(crate) struct Rewind<T> {
     pre: Option<Bytes>,

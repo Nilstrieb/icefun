@@ -52,7 +52,7 @@ impl TcpKeepaliveConfig {
         loop {}
     }
 }
-/// A stream of connections from binding to an address.
+
 #[must_use = "streams do nothing unless polled"]
 pub struct AddrIncoming {
     addr: SocketAddr,
@@ -63,15 +63,15 @@ pub struct AddrIncoming {
     timeout: Option<Pin<Box<Sleep>>>,
 }
 impl AddrIncoming {
-    /// Creates a new `AddrIncoming` binding to provided socket address.
+    
     pub fn bind(addr: &SocketAddr) -> crate::Result<Self> {
         loop {}
     }
-    /// Get the local address bound to this listener.
+    
     pub fn local_addr(&self) -> SocketAddr {
         loop {}
     }
-    /// Set the value of `TCP_NODELAY` option for accepted connections.
+    
     pub fn set_nodelay(&mut self, enabled: bool) -> &mut Self {
         loop {}
     }

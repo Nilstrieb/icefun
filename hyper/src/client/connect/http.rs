@@ -16,48 +16,48 @@ use tokio::time::Sleep;
 use tracing::{warn};
 use super::dns::{self, GaiResolver, Resolve};
 use super::{Connected, Connection};
-/// A connector for the `http` scheme.
-///
-/// Performs DNS resolution in a thread pool, and then connects over TCP.
-///
-/// # Note
-///
-/// Sets the [`HttpInfo`](HttpInfo) value on responses, which includes
-/// transport information such as the remote socket address used.
+
+
+
+
+
+
+
+
 #[cfg_attr(docsrs, doc(cfg(feature = "tcp")))]
 #[derive(Clone)]
 pub struct HttpConnector<R = GaiResolver> {
     config: Arc<Config>,
     resolver: R,
 }
-/// Extra information about the transport when an HttpConnector is used.
-///
-/// # Example
-///
-/// ```
-/// # async fn doc() -> hyper::Result<()> {
-/// use hyper::Uri;
-/// use hyper::client::{Client, connect::HttpInfo};
-///
-/// let client = Client::new();
-/// let uri = Uri::from_static("http://example.com");
-///
-/// let res = client.get(uri).await?;
-/// res
-///     .extensions()
-///     .get::<HttpInfo>()
-///     .map(|info| {
-///         println!("remote addr = {}", info.remote_addr());
-///     });
-/// # Ok(())
-/// # }
-/// ```
-///
-/// # Note
-///
-/// If a different connector is used besides [`HttpConnector`](HttpConnector),
-/// this value will not exist in the extensions. Consult that specific
-/// connector to see what "extra" information it might provide to responses.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #[derive(Clone, Debug)]
 pub struct HttpInfo {
     remote_addr: SocketAddr,
@@ -77,62 +77,62 @@ struct Config {
     recv_buffer_size: Option<usize>,
 }
 impl HttpConnector {
-    /// Construct a new HttpConnector.
+    
     pub(crate) fn new() -> HttpConnector {
         loop {}
     }
 }
 impl<R> HttpConnector<R> {
-    /// Construct a new HttpConnector.
-    ///
-    /// Takes a [`Resolver`](crate::client::connect::dns#resolvers-are-services) to handle DNS lookups.
+    
+    
+    
     pub(crate) fn new_with_resolver(resolver: R) -> HttpConnector<R> {
         loop {}
     }
-    /// Option to enforce all `Uri`s have the `http` scheme.
-    ///
-    /// Enabled by default.
+    
+    
+    
     #[inline]
     pub(crate) fn enforce_http(&mut self, is_enforced: bool) {
         loop {}
     }
-    /// Set that all sockets have `SO_KEEPALIVE` set with the supplied duration.
-    ///
-    /// If `None`, the option will not be set.
-    ///
-    /// Default is `None`.
+    
+    
+    
+    
+    
     #[inline]
     pub(crate) fn set_keepalive(&mut self, dur: Option<Duration>) {
         loop {}
     }
-    /// Set that all sockets have `SO_NODELAY` set to the supplied value `nodelay`.
-    ///
-    /// Default is `false`.
+    
+    
+    
     #[inline]
     pub(crate) fn set_nodelay(&mut self, nodelay: bool) {
         loop {}
     }
-    /// Sets the value of the SO_SNDBUF option on the socket.
+    
     #[inline]
     pub(crate) fn set_send_buffer_size(&mut self, size: Option<usize>) {
         loop {}
     }
-    /// Sets the value of the SO_RCVBUF option on the socket.
+    
     #[inline]
     pub(crate) fn set_recv_buffer_size(&mut self, size: Option<usize>) {
         loop {}
     }
-    /// Set that all sockets are bound to the configured address before connection.
-    ///
-    /// If `None`, the sockets will not be bound.
-    ///
-    /// Default is `None`.
+    
+    
+    
+    
+    
     #[inline]
     pub(crate) fn set_local_address(&mut self, addr: Option<IpAddr>) {
         loop {}
     }
-    /// Set that all sockets are bound to the configured IPv4 or IPv6 address (depending on host's
-    /// preferences) before connection.
+    
+    
     #[inline]
     pub(crate) fn set_local_addresses(
         &mut self,
@@ -141,35 +141,35 @@ impl<R> HttpConnector<R> {
     ) {
         loop {}
     }
-    /// Set the connect timeout.
-    ///
-    /// If a domain resolves to multiple IP addresses, the timeout will be
-    /// evenly divided across them.
-    ///
-    /// Default is `None`.
+    
+    
+    
+    
+    
+    
     #[inline]
     pub(crate) fn set_connect_timeout(&mut self, dur: Option<Duration>) {
         loop {}
     }
-    /// Set timeout for [RFC 6555 (Happy Eyeballs)][RFC 6555] algorithm.
-    ///
-    /// If hostname resolves to both IPv4 and IPv6 addresses and connection
-    /// cannot be established using preferred address family before timeout
-    /// elapses, then connector will in parallel attempt connection using other
-    /// address family.
-    ///
-    /// If `None`, parallel connection attempts are disabled.
-    ///
-    /// Default is 300 milliseconds.
-    ///
-    /// [RFC 6555]: https://tools.ietf.org/html/rfc6555
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     #[inline]
     pub(crate) fn set_happy_eyeballs_timeout(&mut self, dur: Option<Duration>) {
         loop {}
     }
-    /// Set that all socket have `SO_REUSEADDR` set to the supplied value `reuse_address`.
-    ///
-    /// Default is `false`.
+    
+    
+    
     #[inline]
     pub(crate) fn set_reuse_address(&mut self, reuse_address: bool) -> &mut Self {
         loop {}
@@ -224,11 +224,11 @@ impl Connection for TcpStream {
     }
 }
 impl HttpInfo {
-    /// Get the remote address of the transport used.
+    
     pub(crate) fn remote_addr(&self) -> SocketAddr {
         loop {}
     }
-    /// Get the local address of the transport used.
+    
     pub(crate) fn local_addr(&self) -> SocketAddr {
         loop {}
     }

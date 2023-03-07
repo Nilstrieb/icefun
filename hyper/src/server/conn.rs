@@ -65,29 +65,29 @@ cfg_feature! {
 }
 #[cfg(feature = "tcp")]
 pub use super::tcp::{AddrIncoming, AddrStream};
-/// A lower-level configuration of the HTTP protocol.
-///
-/// This structure is used to configure options for an HTTP server connection.
-///
-/// If you don't have need to manage connections yourself, consider using the
-/// higher-level [Server](super) API.
+
+
+
+
+
+
 #[derive(Clone, Debug)]
 #[cfg(any(feature = "http1", feature = "http2"))]
 #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
 pub(crate) struct Http<E = Exec> {
     pub(crate) exec: E,
 }
-/// The internal mode of HTTP protocol which indicates the behavior when a parse error occurs.
+
 #[cfg(any(feature = "http1", feature = "http2"))]
 #[derive(Clone, Debug, PartialEq)]
 enum ConnectionMode {
-    /// Always use HTTP/1 and do not upgrade when a parse error occurs.
+    
     #[cfg(feature = "http1")]
     H1Only,
-    /// Always use HTTP/2.
+    
     #[cfg(feature = "http2")]
     H2Only,
-    /// Use HTTP/1 and try to upgrade to h2 when a parse error occurs.
+    
     #[cfg(all(feature = "http1", feature = "http2"))]
     Fallback,
 }

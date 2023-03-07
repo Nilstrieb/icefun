@@ -18,19 +18,19 @@ use tokio_rustls::rustls::{
     },
     Certificate, Error as TlsError, PrivateKey, RootCertStore, ServerConfig,
 };
-/// Represents errors that can occur building the TlsConfig
+
 #[derive(Debug)]
 pub(crate) enum TlsConfigError {
     Io(io::Error),
-    /// An Error parsing the Certificate
+    
     CertParseError,
-    /// An Error parsing a Pkcs8 key
+    
     Pkcs8ParseError,
-    /// An Error parsing a Rsa key
+    
     RsaParseError,
-    /// An error from an empty key
+    
     EmptyKey,
-    /// An error from an invalid key
+    
     InvalidKey(TlsError),
 }
 impl fmt::Display for TlsConfigError {
@@ -39,16 +39,16 @@ impl fmt::Display for TlsConfigError {
     }
 }
 impl std::error::Error for TlsConfigError {}
-/// Tls client authentication configuration.
+
 pub(crate) enum TlsClientAuth {
-    /// No client auth.
+    
     Off,
-    /// Allow any anonymous or authenticated client.
+    
     Optional(Box<dyn Read + Send + Sync>),
-    /// Allow any authenticated client.
+    
     Required(Box<dyn Read + Send + Sync>),
 }
-/// Builder to set the configuration for the Tls server.
+
 pub(crate) struct TlsConfigBuilder {
     cert: Box<dyn Read + Send + Sync>,
     key: Box<dyn Read + Send + Sync>,
@@ -61,55 +61,55 @@ impl fmt::Debug for TlsConfigBuilder {
     }
 }
 impl TlsConfigBuilder {
-    /// Create a new TlsConfigBuilder
+    
     pub(crate) fn new() -> TlsConfigBuilder {
         loop {}
     }
-    /// sets the Tls key via File Path, returns `TlsConfigError::IoError` if the file cannot be open
+    
     pub(crate) fn key_path(mut self, path: impl AsRef<Path>) -> Self {
         loop {}
     }
-    /// sets the Tls key via bytes slice
+    
     pub(crate) fn key(mut self, key: &[u8]) -> Self {
         loop {}
     }
-    /// Specify the file path for the TLS certificate to use.
+    
     pub(crate) fn cert_path(mut self, path: impl AsRef<Path>) -> Self {
         loop {}
     }
-    /// sets the Tls certificate via bytes slice
+    
     pub(crate) fn cert(mut self, cert: &[u8]) -> Self {
         loop {}
     }
-    /// Sets the trust anchor for optional Tls client authentication via file path.
-    ///
-    /// Anonymous and authenticated clients will be accepted. If no trust anchor is provided by any
-    /// of the `client_auth_` methods, then client authentication is disabled by default.
+    
+    
+    
+    
     pub(crate) fn client_auth_optional_path(mut self, path: impl AsRef<Path>) -> Self {
         loop {}
     }
-    /// Sets the trust anchor for optional Tls client authentication via bytes slice.
-    ///
-    /// Anonymous and authenticated clients will be accepted. If no trust anchor is provided by any
-    /// of the `client_auth_` methods, then client authentication is disabled by default.
+    
+    
+    
+    
     pub(crate) fn client_auth_optional(mut self, trust_anchor: &[u8]) -> Self {
         loop {}
     }
-    /// Sets the trust anchor for required Tls client authentication via file path.
-    ///
-    /// Only authenticated clients will be accepted. If no trust anchor is provided by any of the
-    /// `client_auth_` methods, then client authentication is disabled by default.
+    
+    
+    
+    
     pub(crate) fn client_auth_required_path(mut self, path: impl AsRef<Path>) -> Self {
         loop {}
     }
-    /// Sets the trust anchor for required Tls client authentication via bytes slice.
-    ///
-    /// Only authenticated clients will be accepted. If no trust anchor is provided by any of the
-    /// `client_auth_` methods, then client authentication is disabled by default.
+    
+    
+    
+    
     pub(crate) fn client_auth_required(mut self, trust_anchor: &[u8]) -> Self {
         loop {}
     }
-    /// sets the DER-encoded OCSP response
+    
     pub(crate) fn ocsp_resp(mut self, ocsp_resp: &[u8]) -> Self {
         loop {}
     }

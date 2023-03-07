@@ -48,23 +48,23 @@ pub(crate) use self::error::*;
 pub(crate) use self::http_types::*;
 pub(crate) use self::io::*;
 pub(crate) use self::task::*;
-/// Return in iter functions to continue iterating.
+
 pub(crate) const HYPER_ITER_CONTINUE: libc::c_int = 0;
-/// Return in iter functions to stop iterating.
+
 #[allow(unused)]
 pub(crate) const HYPER_ITER_BREAK: libc::c_int = 1;
-/// An HTTP Version that is unspecified.
+
 pub(crate) const HYPER_HTTP_VERSION_NONE: libc::c_int = 0;
-/// The HTTP/1.0 version.
+
 pub(crate) const HYPER_HTTP_VERSION_1_0: libc::c_int = 10;
-/// The HTTP/1.1 version.
+
 pub(crate) const HYPER_HTTP_VERSION_1_1: libc::c_int = 11;
-/// The HTTP/2 version.
+
 pub(crate) const HYPER_HTTP_VERSION_2: libc::c_int = 20;
 struct UserDataPointer(*mut std::ffi::c_void);
 unsafe impl Send for UserDataPointer {}
 unsafe impl Sync for UserDataPointer {}
-/// cbindgen:ignore
+
 static VERSION_CSTR: &str = concat!(env!("CARGO_PKG_VERSION"), "\0");
 ffi_fn! {
     #[doc = " Returns a static ASCII (null terminated) string of the hyper version."] fn

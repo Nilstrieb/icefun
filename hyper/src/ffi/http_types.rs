@@ -8,13 +8,13 @@ use super::{UserDataPointer, HYPER_ITER_CONTINUE};
 use crate::ext::{HeaderCaseMap, OriginalHeaderOrder, ReasonPhrase};
 use crate::header::{HeaderName, HeaderValue};
 use crate::{Body, HeaderMap, Method, Request, Response, Uri};
-/// An HTTP request.
+
 pub(crate) struct hyper_request(pub(super) Request<Body>);
-/// An HTTP response.
+
 pub(crate) struct hyper_response(pub(super) Response<Body>);
-/// An HTTP header map.
-///
-/// These can be part of a request or response.
+
+
+
 pub(crate) struct hyper_headers {
     pub(super) headers: HeaderMap,
     orig_casing: HeaderCaseMap,

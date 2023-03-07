@@ -1,26 +1,26 @@
 use libc::size_t;
-/// A more detailed error object returned by some hyper functions.
+
 pub(crate) struct hyper_error(crate::Error);
-/// A return code for many of hyper's methods.
+
 #[repr(C)]
 pub(crate) enum hyper_code {
-    /// All is well.
+    
     HYPERE_OK,
-    /// General error, details in the `hyper_error *`.
+    
     HYPERE_ERROR,
-    /// A function argument was invalid.
+    
     HYPERE_INVALID_ARG,
-    /// The IO transport returned an EOF when one wasn't expected.
-    ///
-    /// This typically means an HTTP request or response was expected, but the
-    /// connection closed cleanly without sending (all of) it.
+    
+    
+    
+    
     HYPERE_UNEXPECTED_EOF,
-    /// Aborted by a user supplied callback.
+    
     HYPERE_ABORTED_BY_CALLBACK,
-    /// An optional hyper feature was not enabled.
+    
     #[cfg_attr(feature = "http2", allow(unused))]
     HYPERE_FEATURE_NOT_ENABLED,
-    /// The peer sent an HTTP message that could not be parsed.
+    
     HYPERE_INVALID_PEER_MESSAGE,
 }
 impl hyper_error {

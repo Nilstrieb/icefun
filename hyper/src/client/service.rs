@@ -10,11 +10,11 @@ use crate::{
     body::HttpBody, common::{task, Pin, Poll},
     service::{MakeConnection, Service},
 };
-/// Creates a connection via `SendRequest`.
-///
-/// This accepts a `hyper::client::conn::Builder` and provides
-/// a `MakeService` implementation to create connections from some
-/// target `T`.
+
+
+
+
+
 #[derive(Debug)]
 pub(crate) struct Connect<C, B, T> {
     inner: C,
@@ -22,8 +22,8 @@ pub(crate) struct Connect<C, B, T> {
     _pd: PhantomData<fn(T, B)>,
 }
 impl<C, B, T> Connect<C, B, T> {
-    /// Create a new `Connect` with some inner connector `C` and a connection
-    /// builder.
+    
+    
     pub(crate) fn new(inner: C, builder: Builder) -> Self {
         loop {}
     }

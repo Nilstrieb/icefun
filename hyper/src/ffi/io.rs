@@ -4,11 +4,11 @@ use std::task::{Context, Poll};
 use libc::size_t;
 use tokio::io::{AsyncRead, AsyncWrite};
 use super::task::hyper_context;
-/// Sentinel value to return from a read or write callback that the operation
-/// is pending.
+
+
 pub(crate) const HYPER_IO_PENDING: size_t = 0xFFFFFFFF;
-/// Sentinel value to return from a read or write callback that the operation
-/// has errored.
+
+
 pub(crate) const HYPER_IO_ERROR: size_t = 0xFFFFFFFE;
 type hyper_io_read_callback = extern "C" fn(
     *mut c_void,
@@ -22,7 +22,7 @@ type hyper_io_write_callback = extern "C" fn(
     *const u8,
     size_t,
 ) -> size_t;
-/// An IO object used to represent a socket or similar concept.
+
 pub(crate) struct hyper_io {
     read: hyper_io_read_callback,
     write: hyper_io_write_callback,
@@ -77,7 +77,7 @@ ffi_fn! {
     " should be the return value."] fn hyper_io_set_write(io : * mut hyper_io, func :
     hyper_io_write_callback) { non_null!(& mut * io ?= ()) .write = func; }
 }
-/// cbindgen:ignore
+
 extern "C" fn read_noop(
     _userdata: *mut c_void,
     _: *mut hyper_context<'_>,
@@ -86,7 +86,7 @@ extern "C" fn read_noop(
 ) -> size_t {
     loop {}
 }
-/// cbindgen:ignore
+
 extern "C" fn write_noop(
     _userdata: *mut c_void,
     _: *mut hyper_context<'_>,

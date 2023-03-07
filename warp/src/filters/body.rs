@@ -31,20 +31,20 @@ pub(crate) fn body() -> impl Filter<Extract = (Body,), Error = Rejection> + Copy
         )
     })
 }
-/// Require a `content-length` header to have a value no greater than some limit.
-///
-/// Rejects if `content-length` header is missing, is invalid, or has a number
-/// larger than the limit provided.
-///
-/// # Example
-///
-/// ```
-/// use warp::Filter;
-///
-/// // Limit the upload to 4kb...
-/// let upload = warp::body::content_length_limit(4096)
-///     .and(warp::body::aggregate());
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn content_length_limit(
     limit: u64,
 ) -> impl Filter<Extract = (), Error = Rejection> + Copy {
@@ -66,44 +66,44 @@ pub fn content_length_limit(
         })
         .untuple_one()
 }
-/// Create a `Filter` that extracts the request body as a `futures::Stream`.
-///
-/// If other filters have already extracted the body, this filter will reject
-/// with a `500 Internal Server Error`.
-///
-/// # Warning
-///
-/// This does not have a default size limit, it would be wise to use one to
-/// prevent a overly large request from using too much memory.
+
+
+
+
+
+
+
+
+
 pub fn stream() -> impl Filter<
     Extract = (impl Stream<Item = Result<impl Buf, crate::Error>>,),
     Error = Rejection,
 > + Copy {
     body().map(|body: Body| BodyStream { body })
 }
-/// Returns a `Filter` that matches any request and extracts a `Future` of a
-/// concatenated body.
-///
-/// The contents of the body will be flattened into a single contiguous
-/// `Bytes`, which may require memory copies. If you don't require a
-/// contiguous buffer, using `aggregate` can be give better performance.
-///
-/// # Warning
-///
-/// This does not have a default size limit, it would be wise to use one to
-/// prevent a overly large request from using too much memory.
-///
-/// # Example
-///
-/// ```
-/// use warp::{Buf, Filter};
-///
-/// let route = warp::body::content_length_limit(1024 * 32)
-///     .and(warp::body::bytes())
-///     .map(|bytes: bytes::Bytes| {
-///         println!("bytes = {:?}", bytes);
-///     });
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn bytes() -> impl Filter<Extract = (Bytes,), Error = Rejection> + Copy {
     body()
         .and_then(|body: hyper::Body| {
@@ -114,35 +114,35 @@ pub fn bytes() -> impl Filter<Extract = (Bytes,), Error = Rejection> + Copy {
                 })
         })
 }
-/// Returns a `Filter` that matches any request and extracts a `Future` of an
-/// aggregated body.
-///
-/// The `Buf` may contain multiple, non-contiguous buffers. This can be more
-/// performant (by reducing copies) when receiving large bodies.
-///
-/// # Warning
-///
-/// This does not have a default size limit, it would be wise to use one to
-/// prevent a overly large request from using too much memory.
-///
-/// # Example
-///
-/// ```
-/// use warp::{Buf, Filter};
-///
-/// fn full_body(mut body: impl Buf) {
-///     // It could have several non-contiguous slices of memory...
-///     while body.has_remaining() {
-///         println!("slice = {:?}", body.chunk());
-///         let cnt = body.chunk().len();
-///         body.advance(cnt);
-///     }
-/// }
-///
-/// let route = warp::body::content_length_limit(1024 * 32)
-///     .and(warp::body::aggregate())
-///     .map(full_body);
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn aggregate() -> impl Filter<Extract = (impl Buf,), Error = Rejection> + Copy {
     body()
         .and_then(|body: ::hyper::Body| {
@@ -153,26 +153,26 @@ pub fn aggregate() -> impl Filter<Extract = (impl Buf,), Error = Rejection> + Co
                 })
         })
 }
-/// Returns a `Filter` that matches any request and extracts a `Future` of a
-/// JSON-decoded body.
-///
-/// # Warning
-///
-/// This does not have a default size limit, it would be wise to use one to
-/// prevent a overly large request from using too much memory.
-///
-/// # Example
-///
-/// ```
-/// use std::collections::HashMap;
-/// use warp::Filter;
-///
-/// let route = warp::body::content_length_limit(1024 * 32)
-///     .and(warp::body::json())
-///     .map(|simple_map: HashMap<String, String>| {
-///         "Got a JSON body!"
-///     });
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn json<T: DeserializeOwned + Send>() -> impl Filter<
     Extract = (T,),
     Error = Rejection,
@@ -187,30 +187,30 @@ pub fn json<T: DeserializeOwned + Send>() -> impl Filter<
                 })
         })
 }
-/// Returns a `Filter` that matches any request and extracts a
-/// `Future` of a form encoded body.
-///
-/// # Note
-///
-/// This filter is for the simpler `application/x-www-form-urlencoded` format,
-/// not `multipart/form-data`.
-///
-/// # Warning
-///
-/// This does not have a default size limit, it would be wise to use one to
-/// prevent a overly large request from using too much memory.
-///
-///
-/// ```
-/// use std::collections::HashMap;
-/// use warp::Filter;
-///
-/// let route = warp::body::content_length_limit(1024 * 32)
-///     .and(warp::body::form())
-///     .map(|simple_map: HashMap<String, String>| {
-///         "Got a urlencoded body!"
-///     });
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn form<T: DeserializeOwned + Send>() -> impl Filter<
     Extract = (T,),
     Error = Rejection,
@@ -292,7 +292,7 @@ impl Stream for BodyStream {
         loop {}
     }
 }
-/// An error used in rejections when deserializing a request body fails.
+
 #[derive(Debug)]
 pub struct BodyDeserializeError {
     cause: BoxError,

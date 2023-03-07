@@ -15,18 +15,18 @@ use tokio::time::Instant;
 use super::{Http1Transaction, ParseContext, ParsedMessage};
 use crate::common::buf::BufList;
 use crate::common::{task, Poll};
-/// The initial buffer size allocated before trying to read from IO.
+
 pub(crate) const INIT_BUFFER_SIZE: usize = 8192;
-/// The minimum value that can be set to max buffer size.
+
 pub(crate) const MINIMUM_MAX_BUFFER_SIZE: usize = INIT_BUFFER_SIZE;
-/// The default maximum read buffer size. If the buffer gets this big and
-/// a message is still not complete, a `TooLarge` error is triggered.
+
+
 pub(crate) const DEFAULT_MAX_BUFFER_SIZE: usize = 8192 + 4096 * 100;
-/// The maximum number of distinct `Buf`s to hold in a list before requiring
-/// a flush. Only affects when the buffer strategy is to queue buffers.
-///
-/// Note that a flush can happen before reaching the maximum. This simply
-/// forces a flush if the queue gets this big.
+
+
+
+
+
 const MAX_BUF_LIST_BUFFERS: usize = 16;
 pub(crate) struct Buffered<T, B> {
     flush_pipeline: bool,
@@ -77,16 +77,16 @@ where
     pub(super) fn read_buf_mut(&mut self) -> &mut BytesMut {
         loop {}
     }
-    /// Return the "allocated" available space, not the potential space
-    /// that could be allocated in the future.
+    
+    
     fn read_buf_remaining_mut(&self) -> usize {
         loop {}
     }
-    /// Return whether we can append to the headers buffer.
-    ///
-    /// Reasons we can't:
-    /// - The write buf is in queue mode, and some of the past body is still
-    ///   needing to be flushed.
+    
+    
+    
+    
+    
     pub(crate) fn can_headers_buf(&self) -> bool {
         loop {}
     }
@@ -136,10 +136,10 @@ where
     ) -> Poll<io::Result<()>> {
         loop {}
     }
-    /// Specialized version of `flush` when strategy is Flatten.
-    ///
-    /// Since all buffered bytes are flattened into the single headers buffer,
-    /// that skips some bookkeeping around using multiple buffers.
+    
+    
+    
+    
     fn poll_flush_flattened(
         &mut self,
         cx: &mut task::Context<'_>,
@@ -217,9 +217,9 @@ impl<T: AsRef<[u8]>> Cursor<T> {
     }
 }
 impl Cursor<Vec<u8>> {
-    /// If we've advanced the position a bit in this cursor, and wish to
-    /// extend the underlying vector, we may wish to unshift the "read" bytes
-    /// off, and move everything else over.
+    
+    
+    
     fn maybe_unshift(&mut self, additional: usize) {
         loop {}
     }
@@ -247,10 +247,10 @@ impl<T: AsRef<[u8]>> Buf for Cursor<T> {
     }
 }
 pub(super) struct WriteBuf<B> {
-    /// Re-usable buffer that holds message headers
+    
     headers: Cursor<Vec<u8>>,
     max_buf_size: usize,
-    /// Deque of user buffers if strategy is Queue
+    
     queue: BufList<B>,
     strategy: WriteStrategy,
 }

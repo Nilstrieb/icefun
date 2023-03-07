@@ -88,15 +88,15 @@ cfg_feature! {
 cfg_feature! {
     #![any(feature = "http1", feature = "http2")] pub use self::sealed::Connect;
 }
-/// Describes a type returned by a connector.
+
 pub trait Connection {
-    /// Return metadata describing the connection.
+    
     fn connected(&self) -> Connected;
 }
-/// Extra information about the connected transport.
-///
-/// This can be used to inform recipients about things like if ALPN
-/// was used, or if connected to an HTTP proxy.
+
+
+
+
 #[derive(Debug)]
 pub struct Connected {
     pub(super) alpn: Alpn,
@@ -110,51 +110,51 @@ pub(super) enum Alpn {
     None,
 }
 impl Connected {
-    /// Create new `Connected` type with empty metadata.
+    
     pub(crate) fn new() -> Connected {
         loop {}
     }
-    /// Set whether the connected transport is to an HTTP proxy.
-    ///
-    /// This setting will affect if HTTP/1 requests written on the transport
-    /// will have the request-target in absolute-form or origin-form:
-    ///
-    /// - When `proxy(false)`:
-    ///
-    /// ```http
-    /// GET /guide HTTP/1.1
-    /// ```
-    ///
-    /// - When `proxy(true)`:
-    ///
-    /// ```http
-    /// GET http://hyper.rs/guide HTTP/1.1
-    /// ```
-    ///
-    /// Default is `false`.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     pub(crate) fn proxy(mut self, is_proxied: bool) -> Connected {
         loop {}
     }
-    /// Determines if the connected transport is to an HTTP proxy.
+    
     pub(crate) fn is_proxied(&self) -> bool {
         loop {}
     }
-    /// Set extra connection information to be set in the extensions of every `Response`.
+    
     pub(crate) fn extra<T: Clone + Send + Sync + 'static>(
         mut self,
         extra: T,
     ) -> Connected {
         loop {}
     }
-    /// Copies the extra connection information into an `Extensions` map.
+    
     pub(crate) fn get_extras(&self, extensions: &mut Extensions) {
         loop {}
     }
-    /// Set that the connected transport negotiated HTTP/2 as its next protocol.
+    
     pub(crate) fn negotiated_h2(mut self) -> Connected {
         loop {}
     }
-    /// Determines if the connected transport negotiated HTTP/2 as its next protocol.
+    
     pub(crate) fn is_negotiated_h2(&self) -> bool {
         loop {}
     }
@@ -219,16 +219,16 @@ pub(super) mod sealed {
     use tokio::io::{AsyncRead, AsyncWrite};
     use super::Connection;
     use crate::common::{Future, Unpin};
-    /// Connect to a destination, returning an IO transport.
-    ///
-    /// A connector receives a [`Uri`](::http::Uri) and returns a `Future` of the
-    /// ready connection.
-    ///
-    /// # Trait Alias
-    ///
-    /// This is really just an *alias* for the `tower::Service` trait, with
-    /// additional bounds set for convenience *inside* hyper. You don't actually
-    /// implement this trait, but `tower::Service<Uri>` instead.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     pub trait Connect: Sealed + Sized {
         #[doc(hidden)]
         type _Svc: ConnectSvc;

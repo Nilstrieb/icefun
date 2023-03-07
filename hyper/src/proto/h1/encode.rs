@@ -5,7 +5,7 @@ use bytes::Buf;
 
 use super::io::WriteBuf;
 type StaticBuf = &'static [u8];
-/// Encoders to handle different Transfer-Encodings.
+
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Encoder {
     kind: Kind,
@@ -19,16 +19,16 @@ pub(crate) struct EncodedBuf<B> {
 pub(crate) struct NotEof(u64);
 #[derive(Debug, PartialEq, Clone)]
 enum Kind {
-    /// An Encoder for when Transfer-Encoding includes `chunked`.
+    
     Chunked,
-    /// An Encoder for when Content-Length is set.
-    ///
-    /// Enforces that the body is not longer than the Content-Length header.
+    
+    
+    
     Length(u64),
-    /// An Encoder for when neither Content-Length nor Chunked encoding is set.
-    ///
-    /// This is mostly only used with HTTP/1.0 with a length. This kind requires
-    /// the connection to be closed when the body is finished.
+    
+    
+    
+    
     #[cfg(feature = "server")]
     CloseDelimited,
 }
@@ -85,11 +85,11 @@ impl Encoder {
     {
         loop {}
     }
-    /// Encodes the full body, without verifying the remaining length matches.
-    ///
-    /// This is used in conjunction with HttpBody::__hyper_full_data(), which
-    /// means we can trust that the buf has the correct size (the buf itself
-    /// was checked to make the headers).
+    
+    
+    
+    
+    
     pub(super) fn danger_full_buf<B>(self, msg: B, dst: &mut WriteBuf<EncodedBuf<B>>)
     where
         B: Buf,

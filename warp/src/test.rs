@@ -115,94 +115,94 @@ use crate::Request;
 #[cfg(feature = "websocket")]
 use crate::{Sink, Stream};
 use self::inner::OneOrTuple;
-/// Starts a new test `RequestBuilder`.
+
 pub fn request() -> RequestBuilder {
     loop {}
 }
-/// Starts a new test `WsBuilder`.
+
 #[cfg(feature = "websocket")]
 pub fn ws() -> WsBuilder {
     loop {}
 }
-/// A request builder for testing filters.
-///
-/// See [module documentation](crate::test) for an overview.
+
+
+
 #[must_use = "RequestBuilder does nothing on its own"]
 #[derive(Debug)]
 pub struct RequestBuilder {
     remote_addr: Option<SocketAddr>,
     req: Request,
 }
-/// A Websocket builder for testing filters.
-///
-/// See [module documentation](crate::test) for an overview.
+
+
+
 #[cfg(feature = "websocket")]
 #[must_use = "WsBuilder does nothing on its own"]
 #[derive(Debug)]
 pub struct WsBuilder {
     req: RequestBuilder,
 }
-/// A test client for Websocket filters.
+
 #[cfg(feature = "websocket")]
 pub struct WsClient {
     tx: mpsc::UnboundedSender<crate::ws::Message>,
     rx: mpsc::UnboundedReceiver<Result<crate::ws::Message, crate::error::Error>>,
 }
-/// An error from Websocket filter tests.
+
 #[derive(Debug)]
 pub struct WsError {
     cause: Box<dyn StdError + Send + Sync>,
 }
 impl RequestBuilder {
-    /// Sets the method of this builder.
-    ///
-    /// The default if not set is `GET`.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let req = warp::test::request()
-    ///     .method("POST");
-    /// ```
-    ///
-    /// # Panic
-    ///
-    /// This panics if the passed string is not able to be parsed as a valid
-    /// `Method`.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     pub fn method(mut self, method: &str) -> Self {
         loop {}
     }
-    /// Sets the request path of this builder.
-    ///
-    /// The default is not set is `/`.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let req = warp::test::request()
-    ///     .path("/todos/33");
-    /// ```
-    ///
-    /// # Panic
-    ///
-    /// This panics if the passed string is not able to be parsed as a valid
-    /// `Uri`.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     pub fn path(mut self, p: &str) -> Self {
         loop {}
     }
-    /// Set a header for this request.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let req = warp::test::request()
-    ///     .header("accept", "application/json");
-    /// ```
-    ///
-    /// # Panic
-    ///
-    /// This panics if the passed strings are not able to be parsed as a valid
-    /// `HeaderName` and `HeaderValue`.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     pub fn header<K, V>(mut self, key: K, value: V) -> Self
     where
         HeaderName: TryFrom<K>,
@@ -210,76 +210,76 @@ impl RequestBuilder {
     {
         loop {}
     }
-    /// Set the remote address of this request
-    ///
-    /// Default is no remote address.
-    ///
-    /// # Example
-    /// ```
-    /// use std::net::{IpAddr, Ipv4Addr, SocketAddr};
-    ///
-    /// let req = warp::test::request()
-    ///     .remote_addr(SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8080));
-    /// ```
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     pub fn remote_addr(mut self, addr: SocketAddr) -> Self {
         loop {}
     }
-    /// Add a type to the request's `http::Extensions`.
+    
     pub fn extension<T>(mut self, ext: T) -> Self
     where
         T: Send + Sync + 'static,
     {
         loop {}
     }
-    /// Set the bytes of this request body.
-    ///
-    /// Default is an empty body.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let req = warp::test::request()
-    ///     .body("foo=bar&baz=quux");
-    /// ```
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     pub fn body(mut self, body: impl AsRef<[u8]>) -> Self {
         loop {}
     }
-    /// Set the bytes of this request body by serializing a value into JSON.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let req = warp::test::request()
-    ///     .json(&true);
-    /// ```
+    
+    
+    
+    
+    
+    
+    
+    
     pub fn json(mut self, val: &impl Serialize) -> Self {
         loop {}
     }
-    /// Tries to apply the `Filter` on this request.
-    ///
-    /// # Example
-    ///
-    /// ```no_run
-    /// async {
-    ///     let param = warp::path::param::<u32>();
-    ///
-    ///     let ex = warp::test::request()
-    ///         .path("/41")
-    ///         .filter(&param)
-    ///         .await
-    ///         .unwrap();
-    ///
-    ///     assert_eq!(ex, 41);
-    ///
-    ///     assert!(
-    ///         warp::test::request()
-    ///             .path("/foo")
-    ///             .filter(&param)
-    ///             .await
-    ///             .is_err()
-    ///     );
-    ///};
-    /// ```
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     pub async fn filter<F>(
         self,
         f: &F,
@@ -292,30 +292,30 @@ impl RequestBuilder {
     {
         loop {}
     }
-    /// Returns whether the `Filter` matches this request, or rejects it.
-    ///
-    /// # Example
-    ///
-    /// ```no_run
-    /// async {
-    ///     let get = warp::get();
-    ///     let post = warp::post();
-    ///
-    ///     assert!(
-    ///         warp::test::request()
-    ///             .method("GET")
-    ///             .matches(&get)
-    ///             .await
-    ///     );
-    ///
-    ///     assert!(
-    ///         !warp::test::request()
-    ///             .method("GET")
-    ///             .matches(&post)
-    ///             .await
-    ///     );
-    ///};
-    /// ```
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     pub async fn matches<F>(self, f: &F) -> bool
     where
         F: Filter,
@@ -325,9 +325,9 @@ impl RequestBuilder {
     {
         loop {}
     }
-    /// Returns `Response` provided by applying the `Filter`.
-    ///
-    /// This requires that the supplied `Filter` return a [`Reply`](Reply).
+    
+    
+    
     pub async fn reply<F>(self, f: &F) -> Response<Bytes>
     where
         F: Filter + 'static,
@@ -339,37 +339,37 @@ impl RequestBuilder {
 }
 #[cfg(feature = "websocket")]
 impl WsBuilder {
-    /// Sets the request path of this builder.
-    ///
-    /// The default is not set is `/`.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let req = warp::test::ws()
-    ///     .path("/chat");
-    /// ```
-    ///
-    /// # Panic
-    ///
-    /// This panics if the passed string is not able to be parsed as a valid
-    /// `Uri`.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     pub fn path(self, p: &str) -> Self {
         loop {}
     }
-    /// Set a header for this request.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let req = warp::test::ws()
-    ///     .header("foo", "bar");
-    /// ```
-    ///
-    /// # Panic
-    ///
-    /// This panics if the passed strings are not able to be parsed as a valid
-    /// `HeaderName` and `HeaderValue`.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     pub fn header<K, V>(self, key: K, value: V) -> Self
     where
         HeaderName: TryFrom<K>,
@@ -377,30 +377,30 @@ impl WsBuilder {
     {
         loop {}
     }
-    /// Execute this Websocket request against the provided filter.
-    ///
-    /// If the handshake succeeds, returns a `WsClient`.
-    ///
-    /// # Example
-    ///
-    /// ```no_run
-    /// use futures_util::future;
-    /// use warp::Filter;
-    /// #[tokio::main]
-    /// # async fn main() {
-    ///
-    /// // Some route that accepts websockets (but drops them immediately).
-    /// let route = warp::ws()
-    ///     .map(|ws: warp::ws::Ws| {
-    ///         ws.on_upgrade(|_| future::ready(()))
-    ///     });
-    ///
-    /// let client = warp::test::ws()
-    ///     .handshake(route)
-    ///     .await
-    ///     .expect("handshake");
-    /// # }
-    /// ```
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     pub async fn handshake<F>(self, f: F) -> Result<WsClient, WsError>
     where
         F: Filter + Clone + Send + Sync + 'static,
@@ -412,19 +412,19 @@ impl WsBuilder {
 }
 #[cfg(feature = "websocket")]
 impl WsClient {
-    /// Send a "text" websocket message to the server.
+    
     pub async fn send_text(&mut self, text: impl Into<String>) {
         loop {}
     }
-    /// Send a websocket message to the server.
+    
     pub async fn send(&mut self, msg: crate::ws::Message) {
         loop {}
     }
-    /// Receive a websocket message from the server.
+    
     pub async fn recv(&mut self) -> Result<crate::filters::ws::Message, WsError> {
         loop {}
     }
-    /// Assert the server has closed the connection.
+    
     pub async fn recv_closed(&mut self) -> Result<(), WsError> {
         loop {}
     }

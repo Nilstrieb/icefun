@@ -11,30 +11,30 @@ pub(crate) type Promise<T> = oneshot::Receiver<Result<T, crate::Error>>;
 pub(crate) fn channel<T, U>() -> (Sender<T, U>, Receiver<T, U>) {
     loop {}
 }
-/// A bounded sender of requests and callbacks for when responses are ready.
-///
-/// While the inner sender is unbounded, the Giver is used to determine
-/// if the Receiver is ready for another request.
+
+
+
+
 pub(crate) struct Sender<T, U> {
-    /// One message is always allowed, even if the Receiver hasn't asked
-    /// for it yet. This boolean keeps track of whether we've sent one
-    /// without notice.
+    
+    
+    
     buffered_once: bool,
-    /// The Giver helps watch that the the Receiver side has been polled
-    /// when the queue is empty. This helps us know when a request and
-    /// response have been fully processed, and a connection is ready
-    /// for more.
+    
+    
+    
+    
     giver: want::Giver,
-    /// Actually bounded by the Giver, plus `buffered_once`.
+    
     inner: mpsc::UnboundedSender<Envelope<T, U>>,
 }
-/// An unbounded version.
-///
-/// Cannot poll the Giver, but can still use it to determine if the Receiver
-/// has been dropped. However, this version can be cloned.
+
+
+
+
 #[cfg(feature = "http2")]
 pub(crate) struct UnboundedSender<T, U> {
-    /// Only used for `is_closed`, since mpsc::UnboundedSender cannot be checked.
+    
     giver: want::SharedGiver,
     inner: mpsc::UnboundedSender<Envelope<T, U>>,
 }
@@ -158,7 +158,7 @@ mod tests {
             loop {}
         }
     }
-    /// Helper to check if the future is ready after polling once.
+    
     struct PollOnce<'a, F>(&'a mut F);
     impl<F, T> Future for PollOnce<'_, F>
     where

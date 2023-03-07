@@ -133,42 +133,42 @@ use self::internal::Opaque;
 use crate::filter::{filter_fn, one, Filter, FilterBase, Internal, One, Tuple};
 use crate::reject::{self, Rejection};
 use crate::route::Route;
-/// Create an exact match path segment `Filter`.
-///
-/// This will try to match exactly to the current request path segment.
-///
-/// # Note
-///
-/// - [`end()`](./fn.end.html) should be used to match the end of a path to avoid having
-///   filters for shorter paths like `/math` unintentionally match a longer
-///   path such as `/math/sum`
-/// - Path-related filters should generally come **before** other types of filters, such
-///   as those checking headers or body types. Including those other filters before
-///   the path checks may result in strange errors being returned because a given request
-///   does not match the parameters for a completely separate route.
-///
-/// # Panics
-///
-/// Exact path filters cannot be empty, or contain slashes.
-///
-/// # Example
-///
-/// ```
-/// use warp::Filter;
-///
-/// // Matches '/hello'
-/// let hello = warp::path("hello")
-///     .map(|| "Hello, World!");
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn path<P>(p: P) -> Exact<Opaque<P>>
 where
     P: AsRef<str>,
 {
     loop {}
 }
-/// A `Filter` matching an exact path segment.
-///
-/// Constructed from `path()` or `path!()`.
+
+
+
 #[allow(missing_debug_implementations)]
 #[derive(Clone, Copy)]
 pub struct Exact<P>(P);
@@ -184,20 +184,20 @@ where
         loop {}
     }
 }
-/// Matches the end of a route.
-///
-/// Note that _not_ including `end()` may result in shorter paths like
-/// `/math` unintentionally matching `/math/sum`.
-///
-/// # Example
-///
-/// ```
-/// use warp::Filter;
-///
-/// // Matches '/'
-/// let hello = warp::path::end()
-///     .map(|| "Hello, World!");
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn end() -> impl Filter<Extract = (), Error = Rejection> + Copy {
     filter_fn(move |route| {
         if route.path().is_empty() {
@@ -207,24 +207,24 @@ pub fn end() -> impl Filter<Extract = (), Error = Rejection> + Copy {
         }
     })
 }
-/// Extract a parameter from a path segment.
-///
-/// This will try to parse a value from the current request path
-/// segment, and if successful, the value is returned as the `Filter`'s
-/// "extracted" value.
-///
-/// If the value could not be parsed, rejects with a `404 Not Found`.
-///
-/// # Example
-///
-/// ```
-/// use warp::Filter;
-///
-/// let route = warp::path::param()
-///     .map(|id: u32| {
-///         format!("You asked for /{}", id)
-///     });
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn param<T: FromStr + Send + 'static>() -> impl Filter<
     Extract = One<T>,
     Error = Rejection,
@@ -237,23 +237,23 @@ pub fn param<T: FromStr + Send + 'static>() -> impl Filter<
         T::from_str(seg).map(one).map_err(|_| reject::not_found())
     })
 }
-/// Extract the unmatched tail of the path.
-///
-/// This will return a `Tail`, which allows access to the rest of the path
-/// that previous filters have not already matched.
-///
-/// # Example
-///
-/// ```
-/// use warp::Filter;
-///
-/// let route = warp::path("foo")
-///     .and(warp::path::tail())
-///     .map(|tail| {
-///         // GET /foo/bar/baz would return "bar/baz".
-///         format!("The tail after foo is {:?}", tail)
-///     });
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn tail() -> impl Filter<Extract = One<Tail>, Error = Infallible> + Copy {
     filter_fn(move |route| {
         let path = path_and_query(route);
@@ -263,13 +263,13 @@ pub fn tail() -> impl Filter<Extract = One<Tail>, Error = Infallible> + Copy {
         future::ok(one(Tail { path, start_index: idx }))
     })
 }
-/// Represents the tail part of a request path, returned by the [`tail()`] filter.
+
 pub struct Tail {
     path: PathAndQuery,
     start_index: usize,
 }
 impl Tail {
-    /// Get the `&str` representation of the remaining path.
+    
     pub fn as_str(&self) -> &str {
         loop {}
     }
@@ -279,24 +279,24 @@ impl fmt::Debug for Tail {
         loop {}
     }
 }
-/// Peek at the unmatched tail of the path, without affecting the matched path.
-///
-/// This will return a `Peek`, which allows access to the rest of the path
-/// that previous filters have not already matched. This differs from `tail`
-/// in that `peek` will **not** set the entire path as matched.
-///
-/// # Example
-///
-/// ```
-/// use warp::Filter;
-///
-/// let route = warp::path("foo")
-///     .and(warp::path::peek())
-///     .map(|peek| {
-///         // GET /foo/bar/baz would return "bar/baz".
-///         format!("The path after foo is {:?}", peek)
-///     });
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn peek() -> impl Filter<Extract = One<Peek>, Error = Infallible> + Copy {
     filter_fn(move |route| {
         let path = path_and_query(route);
@@ -304,17 +304,17 @@ pub fn peek() -> impl Filter<Extract = One<Peek>, Error = Infallible> + Copy {
         future::ok(one(Peek { path, start_index: idx }))
     })
 }
-/// Represents the tail part of a request path, returned by the [`peek()`] filter.
+
 pub struct Peek {
     path: PathAndQuery,
     start_index: usize,
 }
 impl Peek {
-    /// Get the `&str` representation of the remaining path.
+    
     pub fn as_str(&self) -> &str {
         loop {}
     }
-    /// Get an iterator over the segments of the peeked path.
+    
     pub fn segments(&self) -> impl Iterator<Item = &str> {
         self.as_str().split('/').filter(|seg| !seg.is_empty())
     }
@@ -324,44 +324,44 @@ impl fmt::Debug for Peek {
         loop {}
     }
 }
-/// Returns the full request path, irrespective of other filters.
-///
-/// This will return a `FullPath`, which can be stringified to return the
-/// full path of the request.
-///
-/// This is more useful in generic pre/post-processing filters, and should
-/// probably not be used for request matching/routing.
-///
-/// # Example
-///
-/// ```
-/// use warp::{Filter, path::FullPath};
-/// use std::{collections::HashMap, sync::{Arc, Mutex}};
-///
-/// let counts = Arc::new(Mutex::new(HashMap::new()));
-/// let access_counter = warp::path::full()
-///     .map(move |path: FullPath| {
-///         let mut counts = counts.lock().unwrap();
-///
-///         *counts.entry(path.as_str().to_string())
-///             .and_modify(|c| *c += 1)
-///             .or_insert(0)
-///     });
-///
-/// let route = warp::path("foo")
-///     .and(warp::path("bar"))
-///     .and(access_counter)
-///     .map(|count| {
-///         format!("This is the {}th visit to this URL!", count)
-///     });
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn full() -> impl Filter<Extract = One<FullPath>, Error = Infallible> + Copy {
     filter_fn(move |route| future::ok(one(FullPath(path_and_query(route)))))
 }
-/// Represents the full request path, returned by the [`full()`] filter.
+
 pub struct FullPath(PathAndQuery);
 impl FullPath {
-    /// Get the `&str` representation of the request path.
+    
     pub fn as_str(&self) -> &str {
         loop {}
     }
@@ -387,61 +387,61 @@ where
 fn path_and_query(route: &Route) -> PathAndQuery {
     loop {}
 }
-/// Convenient way to chain multiple path filters together.
-///
-/// Any number of either type identifiers or string expressions can be passed,
-/// each separated by a forward slash (`/`). Strings will be used to match
-/// path segments exactly, and type identifiers are used just like
-/// [`param`](crate::path::param) filters.
-///
-/// # Example
-///
-/// ```
-/// use warp::Filter;
-///
-/// // Match `/sum/:a/:b`
-/// let route = warp::path!("sum" / u32 / u32)
-///     .map(|a, b| {
-///         format!("{} + {} = {}", a, b, a + b)
-///     });
-/// ```
-///
-/// The equivalent filter chain without using the `path!` macro looks this:
-///
-/// ```
-/// use warp::Filter;
-///
-/// let route = warp::path("sum")
-///     .and(warp::path::param::<u32>())
-///     .and(warp::path::param::<u32>())
-///     .and(warp::path::end())
-///     .map(|a, b| {
-///         format!("{} + {} = {}", a, b, a + b)
-///     });
-/// ```
-///
-/// # Path Prefixes
-///
-/// The `path!` macro automatically assumes the path should include an `end()`
-/// filter. To build up a path filter *prefix*, such that the `end()` isn't
-/// included, use the `/ ..` syntax.
-///
-///
-/// ```
-/// use warp::Filter;
-///
-/// let prefix = warp::path!("math" / "sum" / ..);
-///
-/// let sum = warp::path!(u32 / u32)
-///     .map(|a, b| {
-///         format!("{} + {} = {}", a, b, a + b)
-///     });
-///
-/// let help = warp::path::end()
-///     .map(|| "This API returns the sum of two u32's");
-///
-/// let api = prefix.and(sum.or(help));
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #[macro_export]
 macro_rules! path {
     ($($pieces:tt)*) => {
@@ -486,25 +486,25 @@ macro_rules! __internal_path {
         $crate ::path(__StaticPath) }
     };
 }
-/// ```compile_fail
-/// warp::path!("foo" / .. / "bar");
-/// ```
-///
-/// ```compile_fail
-/// warp::path!(.. / "bar");
-/// ```
-///
-/// ```compile_fail
-/// warp::path!("foo" ..);
-/// ```
-///
-/// ```compile_fail
-/// warp::path!("foo" / .. /);
-/// ```
-///
-/// ```compile_fail
-/// warp::path!(..);
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 fn _path_macro_compile_fail() {}
 mod internal {
     #[allow(missing_debug_implementations)]

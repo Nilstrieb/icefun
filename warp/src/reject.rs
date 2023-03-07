@@ -61,12 +61,12 @@ use std::error::Error as StdError;
 use std::fmt;
 use http::{self, StatusCode};
 pub(crate) use self::sealed::{CombineRejection, IsReject};
-/// Rejects a request with `404 Not Found`.
+
 #[inline]
 pub fn reject() -> Rejection {
     loop {}
 }
-/// Rejects a request with `404 Not Found`.
+
 #[inline]
 pub fn not_found() -> Rejection {
     loop {}
@@ -103,41 +103,41 @@ pub(crate) fn payload_too_large() -> Rejection {
 pub(crate) fn unsupported_media_type() -> Rejection {
     loop {}
 }
-/// Rejects a request with a custom cause.
-///
-/// A [`recover`][] filter should convert this `Rejection` into a `Reply`,
-/// or else this will be returned as a `500 Internal Server Error`.
-///
-/// [`recover`]: ../trait.Filter.html#method.recover
+
+
+
+
+
+
 pub fn custom<T: Reject>(err: T) -> Rejection {
     loop {}
 }
-/// Protect against re-rejecting a rejection.
-///
-/// ```compile_fail
-/// fn with(r: warp::Rejection) {
-///     let _wat = warp::reject::custom(r);
-/// }
-/// ```
+
+
+
+
+
+
+
 fn __reject_custom_compilefail() {}
-/// A marker trait to ensure proper types are used for custom rejections.
-///
-/// Can be converted into Rejection.
-///
-/// # Example
-///
-/// ```
-/// use warp::{Filter, reject::Reject};
-///
-/// #[derive(Debug)]
-/// struct RateLimited;
-///
-/// impl Reject for RateLimited {}
-///
-/// let route = warp::any().and_then(|| async {
-///     Err::<(), _>(warp::reject::custom(RateLimited))
-/// });
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub trait Reject: fmt::Debug + Sized + Send + Sync + 'static {}
 trait Cause: fmt::Debug + Send + Sync + 'static {
     fn as_any(&self) -> &dyn Any;
@@ -154,9 +154,9 @@ impl dyn Cause {}
 pub(crate) fn known<T: Into<Known>>(err: T) -> Rejection {
     loop {}
 }
-/// Rejection of a request by a [`Filter`](crate::Filter).
-///
-/// See the [`reject`](module@crate::reject) documentation for more.
+
+
+
 pub struct Rejection {
     reason: Reason,
 }
@@ -194,37 +194,37 @@ enum_known! {
     BodyConsumedMultipleTimes(crate ::body::BodyConsumedMultipleTimes),
 }
 impl Rejection {
-    /// Searches this `Rejection` for a specific cause.
-    ///
-    /// A `Rejection` will accumulate causes over a `Filter` chain. This method
-    /// can search through them and return the first cause of this type.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// #[derive(Debug)]
-    /// struct Nope;
-    ///
-    /// impl warp::reject::Reject for Nope {}
-    ///
-    /// let reject = warp::reject::custom(Nope);
-    ///
-    /// if let Some(nope) = reject.find::<Nope>() {
-    ///    println!("found it: {:?}", nope);
-    /// }
-    /// ```
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     pub fn find<T: 'static>(&self) -> Option<&T> {
         loop {}
     }
-    /// Returns true if this Rejection was made via `warp::reject::not_found`.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let rejection = warp::reject();
-    ///
-    /// assert!(rejection.is_not_found());
-    /// ```
+    
+    
+    
+    
+    
+    
+    
+    
+    
     pub fn is_not_found(&self) -> bool {
         loop {}
     }
@@ -286,13 +286,13 @@ unit_error! {
     #[doc = " The request's content-type is not supported"] pub UnsupportedMediaType :
     "The request's content-type is not supported"
 }
-/// Missing request header
+
 #[derive(Debug)]
 pub struct MissingHeader {
     name: &'static str,
 }
 impl MissingHeader {
-    /// Retrieve the name of the header that was missing
+    
     pub fn name(&self) -> &str {
         loop {}
     }
@@ -303,13 +303,13 @@ impl fmt::Display for MissingHeader {
     }
 }
 impl StdError for MissingHeader {}
-/// Invalid request header
+
 #[derive(Debug)]
 pub struct InvalidHeader {
     name: &'static str,
 }
 impl InvalidHeader {
-    /// Retrieve the name of the header that was invalid
+    
     pub fn name(&self) -> &str {
         loop {}
     }
@@ -320,13 +320,13 @@ impl fmt::Display for InvalidHeader {
     }
 }
 impl StdError for InvalidHeader {}
-/// Missing cookie
+
 #[derive(Debug)]
 pub struct MissingCookie {
     name: &'static str,
 }
 impl MissingCookie {
-    /// Retrieve the name of the cookie that was missing
+    
     pub fn name(&self) -> &str {
         loop {}
     }
@@ -350,22 +350,22 @@ mod sealed {
         loop {}
     }
     pub trait CombineRejection<E>: Send + Sized {
-        /// The type that should be returned when only 1 of the two
-        /// "rejections" occurs.
-        ///
-        /// # For example:
-        ///
-        /// `warp::any().and(warp::path("foo"))` has the following steps:
-        ///
-        /// 1. Since this is `and`, only **one** of the rejections will occur,
-        ///    and as soon as it does, it will be returned.
-        /// 2. `warp::any()` rejects with `Never`. So, it will never return `Never`.
-        /// 3. `warp::path()` rejects with `Rejection`. It may return `Rejection`.
-        ///
-        /// Thus, if the above filter rejects, it will definitely be `Rejection`.
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         type One: IsReject + From<Self> + From<E> + Into<Rejection>;
-        /// The type that should be returned when both rejections occur,
-        /// and need to be combined.
+        
+        
         type Combined: IsReject;
         fn combine(self, other: E) -> Self::Combined;
     }

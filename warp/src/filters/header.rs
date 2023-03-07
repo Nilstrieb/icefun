@@ -15,25 +15,25 @@ use http::HeaderMap;
 use crate::filter::{filter_fn, filter_fn_one, Filter, One};
 use crate::reject::{self, Rejection};
 
-/// Create a `Filter` that tries to parse the specified header.
-///
-/// This `Filter` will look for a header with supplied name, and try to
-/// parse to a `T`, otherwise rejects the request.
-///
-/// # Example
-///
-/// ```
-/// use std::net::SocketAddr;
-///
-/// // Parse `content-length: 100` as a `u64`
-/// let content_length = warp::header::<u64>("content-length");
-///
-/// // Parse `host: 127.0.0.1:8080` as a `SocketAddr
-/// let local_host = warp::header::<SocketAddr>("host");
-///
-/// // Parse `foo: bar` into a `String`
-/// let foo = warp::header::<String>("foo");
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn header<T: FromStr + Send + 'static>(
     name: &'static str,
 ) -> impl Filter<Extract = One<T>, Error = Rejection> + Copy {
@@ -61,18 +61,18 @@ pub(crate) fn header2<T: Header + Send + 'static>(
     })
 }
 
-/// Create a `Filter` that tries to parse the specified header, if it exists.
-///
-/// If the header does not exist, it yields `None`. Otherwise, it will try to
-/// parse as a `T`, and if it fails, a invalid header rejection is return. If
-/// successful, the filter yields `Some(T)`.
-///
-/// # Example
-///
-/// ```
-/// // Grab the `authorization` header if it exists.
-/// let opt_auth = warp::header::optional::<String>("authorization");
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn optional<T>(
     name: &'static str,
 ) -> impl Filter<Extract = One<Option<T>>, Error = Rejection> + Copy
@@ -123,17 +123,17 @@ where
 }
 */
 
-/// Create a `Filter` that requires a header to match the value exactly.
-///
-/// This `Filter` will look for a header with supplied name and the exact
-/// value, otherwise rejects the request.
-///
-/// # Example
-///
-/// ```
-/// // Require `dnt: 1` header to be set.
-/// let must_dnt = warp::header::exact("dnt", "1");
-/// ```
+
+
+
+
+
+
+
+
+
+
+
 pub fn exact(
     name: &'static str,
     value: &'static str,
@@ -155,17 +155,17 @@ pub fn exact(
     })
 }
 
-/// Create a `Filter` that requires a header to match the value exactly.
-///
-/// This `Filter` will look for a header with supplied name and the exact
-/// value, ignoring ASCII case, otherwise rejects the request.
-///
-/// # Example
-///
-/// ```
-/// // Require `connection: keep-alive` header to be set.
-/// let keep_alive = warp::header::exact_ignore_case("connection", "keep-alive");
-/// ```
+
+
+
+
+
+
+
+
+
+
+
 pub fn exact_ignore_case(
     name: &'static str,
     value: &'static str,
@@ -187,18 +187,18 @@ pub fn exact_ignore_case(
     })
 }
 
-/// Create a `Filter` that gets a `HeaderValue` for the name.
-///
-/// # Example
-///
-/// ```
-/// use warp::{Filter, http::header::HeaderValue};
-///
-/// let filter = warp::header::value("x-token")
-///     .map(|value: HeaderValue| {
-///         format!("header value bytes: {:?}", value)
-///     });
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn value(
     name: &'static str,
 ) -> impl Filter<Extract = One<HeaderValue>, Error = Rejection> + Copy {
@@ -213,18 +213,18 @@ pub fn value(
     })
 }
 
-/// Create a `Filter` that returns a clone of the request's `HeaderMap`.
-///
-/// # Example
-///
-/// ```
-/// use warp::{Filter, http::HeaderMap};
-///
-/// let headers = warp::header::headers_cloned()
-///     .map(|headers: HeaderMap| {
-///         format!("header count: {}", headers.len())
-///     });
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn headers_cloned() -> impl Filter<Extract = One<HeaderMap>, Error = Infallible> + Copy {
     filter_fn_one(|route| future::ok(route.headers().clone()))
 }

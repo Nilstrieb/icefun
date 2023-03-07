@@ -49,50 +49,50 @@ use tokio::sync::oneshot;
 
 use crate::common::io::Rewind;
 use crate::common::{task, Future, Pin, Poll};
-/// An upgraded HTTP connection.
-///
-/// This type holds a trait object internally of the original IO that
-/// was used to speak HTTP before the upgrade. It can be used directly
-/// as a `Read` or `Write` for convenience.
-///
-/// Alternatively, if the exact type is known, this can be deconstructed
-/// into its parts.
+
+
+
+
+
+
+
+
 pub(crate) struct Upgraded {
     io: Rewind<Box<dyn Io + Send>>,
 }
-/// A future for a possible HTTP upgrade.
-///
-/// If no upgrade was available, or it doesn't succeed, yields an `Error`.
+
+
+
 pub(crate) struct OnUpgrade {
     rx: Option<oneshot::Receiver<crate::Result<Upgraded>>>,
 }
-/// The deconstructed parts of an [`Upgraded`](Upgraded) type.
-///
-/// Includes the original IO type, and a read buffer of bytes that the
-/// HTTP state machine may have already read before completing an upgrade.
+
+
+
+
 #[derive(Debug)]
 pub(crate) struct Parts<T> {
-    /// The original IO object used before the upgrade.
+    
     pub(crate) io: T,
-    /// A buffer of bytes that have been read but not processed as HTTP.
-    ///
-    /// For instance, if the `Connection` is used for an HTTP upgrade request,
-    /// it is possible the server sent back the first bytes of the new protocol
-    /// along with the response upgrade.
-    ///
-    /// You will want to check for any existing bytes if you plan to continue
-    /// communicating on the IO object.
+    
+    
+    
+    
+    
+    
+    
+    
     pub(crate) read_buf: Bytes,
     _inner: (),
 }
-/// Gets a pending HTTP upgrade from this message.
-///
-/// This can be called on the following types:
-///
-/// - `http::Request<B>`
-/// - `http::Response<B>`
-/// - `&mut http::Request<B>`
-/// - `&mut http::Response<B>`
+
+
+
+
+
+
+
+
 pub(crate) fn on<T: sealed::CanUpgrade>(msg: T) -> OnUpgrade {
     loop {}
 }
@@ -112,10 +112,10 @@ impl Upgraded {
     {
         loop {}
     }
-    /// Tries to downcast the internal trait object to the type passed.
-    ///
-    /// On success, returns the downcasted parts. On error, returns the
-    /// `Upgraded` back.
+    
+    
+    
+    
     pub(crate) fn downcast<T: AsyncRead + AsyncWrite + Unpin + 'static>(
         self,
     ) -> Result<Parts<T>, Self> {
@@ -193,16 +193,16 @@ impl Pending {
         loop {}
     }
     #[cfg(feature = "http1")]
-    /// Don't fulfill the pending Upgrade, but instead signal that
-    /// upgrades are handled manually.
+    
+    
     pub(super) fn manual(self) {
         loop {}
     }
 }
-/// Error cause returned when an upgrade was expected but canceled
-/// for whatever reason.
-///
-/// This likely means the actual `Conn` future wasn't polled and upgraded.
+
+
+
+
 #[derive(Debug)]
 struct UpgradeExpected;
 impl fmt::Display for UpgradeExpected {

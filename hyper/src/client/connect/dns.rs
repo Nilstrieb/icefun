@@ -34,21 +34,21 @@ use tokio::task::JoinHandle;
 use tower_service::Service;
 
 pub(super) use self::sealed::Resolve;
-/// A domain name to resolve into IP addresses.
+
 #[derive(Clone, Hash, Eq, PartialEq)]
 pub struct Name {
     host: Box<str>,
 }
-/// A resolver using blocking `getaddrinfo` calls in a threadpool.
+
 #[derive(Clone)]
 pub struct GaiResolver {
     _priv: (),
 }
-/// An iterator of IP addresses returned from `getaddrinfo`.
+
 pub struct GaiAddrs {
     inner: SocketAddrs,
 }
-/// A future to resolve a name returned by `GaiResolver`.
+
 pub struct GaiFuture {
     inner: JoinHandle<Result<SocketAddrs, io::Error>>,
 }
@@ -56,7 +56,7 @@ impl Name {
     pub(super) fn new(host: Box<str>) -> Name {
         loop {}
     }
-    /// View the hostname as a string slice.
+    
     pub(crate) fn as_str(&self) -> &str {
         loop {}
     }
@@ -77,7 +77,7 @@ impl FromStr for Name {
         loop {}
     }
 }
-/// Error indicating a given string was not a valid domain name.
+
 #[derive(Debug)]
 pub struct InvalidNameError(());
 impl fmt::Display for InvalidNameError {
@@ -87,7 +87,7 @@ impl fmt::Display for InvalidNameError {
 }
 impl Error for InvalidNameError {}
 impl GaiResolver {
-    /// Construct a new `GaiResolver`.
+    
     pub(crate) fn new() -> Self {
         loop {}
     }

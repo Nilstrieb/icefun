@@ -12,40 +12,40 @@ use crate::filter::{Filter, WrapSealed};
 use crate::reject::{CombineRejection, Rejection};
 use crate::reply::Reply;
 use self::internal::{CorsFilter, IntoOrigin, Seconds};
-/// Create a wrapping filter that exposes [CORS][] behavior for a wrapped
-/// filter.
-///
-/// [CORS]: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
-///
-/// # Example
-///
-/// ```
-/// use warp::Filter;
-///
-/// let cors = warp::cors()
-///     .allow_origin("https://hyper.rs")
-///     .allow_methods(vec!["GET", "POST", "DELETE"]);
-///
-/// let route = warp::any()
-///     .map(warp::reply)
-///     .with(cors);
-/// ```
-/// If you want to allow any route:
-/// ```
-/// use warp::Filter;
-/// let cors = warp::cors()
-///     .allow_any_origin();
-/// ```
-/// You can find more usage examples [here](https://github.com/seanmonstar/warp/blob/7fa54eaecd0fe12687137372791ff22fc7995766/tests/cors.rs).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn cors() -> Builder {
     loop {}
 }
-/// A wrapping filter constructed via `warp::cors()`.
+
 #[derive(Clone, Debug)]
 pub struct Cors {
     config: Arc<Configured>,
 }
-/// A constructed via `warp::cors()`.
+
 #[derive(Clone, Debug)]
 pub struct Builder {
     credentials: bool,
@@ -56,26 +56,26 @@ pub struct Builder {
     origins: Option<HashSet<HeaderValue>>,
 }
 impl Builder {
-    /// Sets whether to add the `Access-Control-Allow-Credentials` header.
+    
     pub fn allow_credentials(mut self, allow: bool) -> Self {
         loop {}
     }
-    /// Adds a method to the existing list of allowed request methods.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the provided argument is not a valid `http::Method`.
+    
+    
+    
+    
+    
     pub fn allow_method<M>(mut self, method: M) -> Self
     where
         http::Method: TryFrom<M>,
     {
         loop {}
     }
-    /// Adds multiple methods to the existing list of allowed request methods.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the provided argument is not a valid `http::Method`.
+    
+    
+    
+    
+    
     pub fn allow_methods<I>(mut self, methods: I) -> Self
     where
         I: IntoIterator,
@@ -83,26 +83,26 @@ impl Builder {
     {
         loop {}
     }
-    /// Adds a header to the list of allowed request headers.
-    ///
-    /// **Note**: These should match the values the browser sends via `Access-Control-Request-Headers`, e.g. `content-type`.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the provided argument is not a valid `http::header::HeaderName`.
+    
+    
+    
+    
+    
+    
+    
     pub fn allow_header<H>(mut self, header: H) -> Self
     where
         HeaderName: TryFrom<H>,
     {
         loop {}
     }
-    /// Adds multiple headers to the list of allowed request headers.
-    ///
-    /// **Note**: These should match the values the browser sends via `Access-Control-Request-Headers`, e.g.`content-type`.
-    ///
-    /// # Panics
-    ///
-    /// Panics if any of the headers are not a valid `http::header::HeaderName`.
+    
+    
+    
+    
+    
+    
+    
     pub fn allow_headers<I>(mut self, headers: I) -> Self
     where
         I: IntoIterator,
@@ -110,22 +110,22 @@ impl Builder {
     {
         loop {}
     }
-    /// Adds a header to the list of exposed headers.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the provided argument is not a valid `http::header::HeaderName`.
+    
+    
+    
+    
+    
     pub fn expose_header<H>(mut self, header: H) -> Self
     where
         HeaderName: TryFrom<H>,
     {
         loop {}
     }
-    /// Adds multiple headers to the list of exposed headers.
-    ///
-    /// # Panics
-    ///
-    /// Panics if any of the headers are not a valid `http::header::HeaderName`.
+    
+    
+    
+    
+    
     pub fn expose_headers<I>(mut self, headers: I) -> Self
     where
         I: IntoIterator,
@@ -133,28 +133,28 @@ impl Builder {
     {
         loop {}
     }
-    /// Sets that *any* `Origin` header is allowed.
-    ///
-    /// # Warning
-    ///
-    /// This can allow websites you didn't intend to access this resource,
-    /// it is usually better to set an explicit list.
+    
+    
+    
+    
+    
+    
     pub fn allow_any_origin(mut self) -> Self {
         loop {}
     }
-    /// Add an origin to the existing list of allowed `Origin`s.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the provided argument is not a valid `Origin`.
+    
+    
+    
+    
+    
     pub fn allow_origin(self, origin: impl IntoOrigin) -> Self {
         loop {}
     }
-    /// Add multiple origins to the existing list of allowed `Origin`s.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the provided argument is not a valid `Origin`.
+    
+    
+    
+    
+    
     pub fn allow_origins<I>(mut self, origins: I) -> Self
     where
         I: IntoIterator,
@@ -162,27 +162,27 @@ impl Builder {
     {
         loop {}
     }
-    /// Sets the `Access-Control-Max-Age` header.
-    ///
-    /// # Example
-    ///
-    ///
-    /// ```
-    /// use std::time::Duration;
-    /// use warp::Filter;
-    ///
-    /// let cors = warp::cors()
-    ///     .max_age(30) // 30u32 seconds
-    ///     .max_age(Duration::from_secs(30)); // or a Duration
-    /// ```
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     pub fn max_age(mut self, seconds: impl Seconds) -> Self {
         loop {}
     }
-    /// Builds the `Cors` wrapper from the configured settings.
-    ///
-    /// This step isn't *required*, as the `Builder` itself can be passed
-    /// to `Filter::with`. This just allows constructing once, thus not needing
-    /// to pay the cost of "building" every time.
+    
+    
+    
+    
+    
     pub fn build(self) -> Cors {
         loop {}
     }
@@ -211,7 +211,7 @@ where
         loop {}
     }
 }
-/// An error used to reject requests that are forbidden by a `cors` filter.
+
 pub struct CorsForbidden {
     kind: Forbidden,
 }

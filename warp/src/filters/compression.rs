@@ -29,58 +29,58 @@ impl From<CompressionAlgo> for HeaderValue {
         loop {}
     }
 }
-/// Compression
+
 #[derive(Clone, Copy, Debug)]
 pub struct Compression<F> {
     func: F,
 }
-/// Create a wrapping filter that compresses the Body of a [`Response`](crate::reply::Response)
-/// using gzip, adding `content-encoding: gzip` to the Response's [`HeaderMap`](hyper::HeaderMap)
-///
-/// # Example
-///
-/// ```
-/// use warp::Filter;
-///
-/// let route = warp::get()
-///     .and(warp::path::end())
-///     .and(warp::fs::file("./README.md"))
-///     .with(warp::compression::gzip());
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
 #[cfg(feature = "compression-gzip")]
 pub fn gzip() -> Compression<impl Fn(CompressionProps) -> Response + Copy> {
     loop {}
 }
-/// Create a wrapping filter that compresses the Body of a [`Response`](crate::reply::Response)
-/// using deflate, adding `content-encoding: deflate` to the Response's [`HeaderMap`](hyper::HeaderMap)
-///
-/// # Example
-///
-/// ```
-/// use warp::Filter;
-///
-/// let route = warp::get()
-///     .and(warp::path::end())
-///     .and(warp::fs::file("./README.md"))
-///     .with(warp::compression::deflate());
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
 #[cfg(feature = "compression-gzip")]
 pub fn deflate() -> Compression<impl Fn(CompressionProps) -> Response + Copy> {
     loop {}
 }
-/// Create a wrapping filter that compresses the Body of a [`Response`](crate::reply::Response)
-/// using brotli, adding `content-encoding: br` to the Response's [`HeaderMap`](hyper::HeaderMap)
-///
-/// # Example
-///
-/// ```
-/// use warp::Filter;
-///
-/// let route = warp::get()
-///     .and(warp::path::end())
-///     .and(warp::fs::file("./README.md"))
-///     .with(warp::compression::brotli());
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
 #[cfg(feature = "compression-brotli")]
 pub fn brotli() -> Compression<impl Fn(CompressionProps) -> Response + Copy> {
     loop {}
@@ -109,8 +109,8 @@ mod internal {
     use crate::reject::IsReject;
     use crate::reply::{Reply, Response};
     use super::Compression;
-    /// A wrapper around any type that implements [`Stream`](futures::Stream) to be
-    /// compatible with async_compression's Stream based encoders
+    
+    
     #[pin_project]
     #[derive(Debug)]
     pub struct CompressableBody<S, E>
@@ -139,7 +139,7 @@ mod internal {
             loop {}
         }
     }
-    /// Compression Props
+    
     #[derive(Debug)]
     pub struct CompressionProps {
         pub(super) body: CompressableBody<Body, hyper::Error>,

@@ -5,25 +5,25 @@ use std::sync::Arc;
 
 use super::{Filter, FilterBase, Internal, Tuple};
 use crate::reject::Rejection;
-/// A type representing a boxed `Filter` trait object.
-///
-/// The filter inside is a dynamic trait object. The purpose of this type is
-/// to ease returning `Filter`s from other functions.
-///
-/// To create one, call `Filter::boxed` on any filter.
-///
-/// # Examples
-///
-/// ```
-/// use warp::{Filter, filters::BoxedFilter, Reply};
-///
-/// pub fn assets_filter() -> BoxedFilter<(impl Reply,)> {
-///     warp::path("assets")
-///         .and(warp::fs::dir("./assets"))
-///         .boxed()
-/// }
-/// ```
-///
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub struct BoxedFilter<T: Tuple> {
     filter: Arc<
         dyn Filter<

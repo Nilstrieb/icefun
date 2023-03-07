@@ -18,13 +18,13 @@ use crate::common::{task, Poll, Unpin};
 
 use crate::proto::{BodyLength, MessageHead};
 const H2_PREFACE: &[u8] = b"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n";
-/// This handles a connection, which will have been established over an
-/// `AsyncRead + AsyncWrite` (like a socket), and will likely include multiple
-/// `Transaction`s over HTTP.
-///
-/// The connection will determine when a message begins and ends as well as
-/// determine if this connection can be kept alive after the message,
-/// or if it is complete.
+
+
+
+
+
+
+
 pub(crate) struct Conn<I, B, T> {
     io: Buffered<I, EncodedBuf<B>>,
     state: State,
@@ -217,7 +217,7 @@ where
     ) -> Poll<io::Result<()>> {
         loop {}
     }
-    /// If the read side can be cheaply drained, do so. Otherwise, close.
+    
     pub(super) fn poll_drain_or_close_read(&mut self, cx: &mut task::Context<'_>) {
         loop {}
     }
@@ -246,17 +246,17 @@ impl<I, B: Buf, T> fmt::Debug for Conn<I, B, T> {
 impl<I: Unpin, B, T> Unpin for Conn<I, B, T> {}
 struct State {
     allow_half_close: bool,
-    /// Re-usable HeaderMap to reduce allocating new ones.
+    
     cached_headers: Option<HeaderMap>,
-    /// If an error occurs when there wasn't a direct way to return it
-    /// back to the user, this is set.
+    
+    
     error: Option<crate::Error>,
-    /// Current keep-alive status.
+    
     keep_alive: KA,
-    /// If mid-message, the HTTP Method that started it.
-    ///
-    /// This is used to know things such as if the message can include
-    /// a body or not.
+    
+    
+    
+    
     method: Option<Method>,
     h1_parser_config: ParserConfig,
     #[cfg(all(feature = "server", feature = "runtime"))]
@@ -270,23 +270,23 @@ struct State {
     preserve_header_order: bool,
     title_case_headers: bool,
     h09_responses: bool,
-    /// If set, called with each 1xx informational response received for
-    /// the current request. MUST be unset after a non-1xx response is
-    /// received.
+    
+    
+    
     #[cfg(feature = "ffi")]
     on_informational: Option<crate::ffi::OnInformational>,
     #[cfg(feature = "ffi")]
     raw_headers: bool,
-    /// Set to true when the Dispatcher should poll read operations
-    /// again. See the `maybe_notify` method for more.
+    
+    
     notify_read: bool,
-    /// State of allowed reads
+    
     reading: Reading,
-    /// State of allowed writes
+    
     writing: Writing,
-    /// An expected pending HTTP upgrade.
+    
     upgrade: Option<crate::upgrade::Pending>,
-    /// Either HTTP/1.0 or 1.1 connection
+    
     version: Version,
 }
 #[derive(Debug)]

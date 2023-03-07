@@ -2,7 +2,7 @@ use std::convert::Infallible;
 use std::error::Error as StdError;
 use std::fmt;
 type BoxError = Box<dyn std::error::Error + Send + Sync>;
-/// Errors that can happen inside warp.
+
 pub struct Error {
     inner: BoxError,
 }

@@ -18,18 +18,18 @@ use crate::common::{task, watch, Pin, Poll};
 use crate::proto::h2::ping;
 type BodySender = mpsc::Sender<Result<Bytes, crate::Error>>;
 type TrailersSender = oneshot::Sender<HeaderMap>;
-/// A stream of `Bytes`, used when receiving bodies.
-///
-/// A good default [`HttpBody`](crate::body::HttpBody) to use in many
-/// applications.
-///
-/// Note: To read the full body, use [`body::to_bytes`](crate::body::to_bytes)
-/// or [`body::aggregate`](crate::body::aggregate).
+
+
+
+
+
+
+
 #[must_use = "streams do nothing unless polled"]
 pub struct Body {
     kind: Kind,
-    /// Keep the extra bits in an `Option<Box<Extra>>`, so that
-    /// Body stays small in the common case (no extras needed).
+    
+    
     extra: Option<Box<Extra>>,
 }
 enum Kind {
@@ -58,43 +58,43 @@ enum Kind {
     ),
 }
 struct Extra {
-    /// Allow the client to pass a future to delay the `Body` from returning
-    /// EOF. This allows the `Client` to try to put the idle connection
-    /// back into the pool before the body is "finished".
-    ///
-    /// The reason for this is so that creating a new request after finishing
-    /// streaming the body of a response could sometimes result in creating
-    /// a brand new connection, since the pool didn't know about the idle
-    /// connection yet.
+    
+    
+    
+    
+    
+    
+    
+    
     delayed_eof: Option<DelayEof>,
 }
 #[cfg(all(feature = "client", any(feature = "http1", feature = "http2")))]
 type DelayEofUntil = oneshot::Receiver<Never>;
 enum DelayEof {
-    /// Initial state, stream hasn't seen EOF yet.
+    
     #[cfg(any(feature = "http1", feature = "http2"))]
     #[cfg(feature = "client")]
     NotEof(DelayEofUntil),
-    /// Transitions to this state once we've seen `poll` try to
-    /// return EOF (`None`). This future is then polled, and
-    /// when it completes, the Body finally returns EOF (`None`).
+    
+    
+    
     #[cfg(any(feature = "http1", feature = "http2"))]
     #[cfg(feature = "client")]
     Eof(DelayEofUntil),
 }
-/// A sender half created through [`Body::channel()`].
-///
-/// Useful when wanting to stream chunks from another thread.
-///
-/// ## Body Closing
-///
-/// Note that the request body will always be closed normally when the sender is dropped (meaning
-/// that the empty terminating chunk will be sent to the remote). If you desire to close the
-/// connection with an incomplete response (e.g. in the case of an error during asynchronous
-/// processing), call the [`Sender::abort()`] method to abort the body in an abnormal fashion.
-///
-/// [`Body::channel()`]: struct.Body.html#method.channel
-/// [`Sender::abort()`]: struct.Sender.html#method.abort
+
+
+
+
+
+
+
+
+
+
+
+
+
 #[must_use = "Sender does nothing unless sent on"]
 pub struct Sender {
     want_rx: watch::Receiver,
@@ -102,41 +102,41 @@ pub struct Sender {
     trailers_tx: Option<TrailersSender>,
 }
 impl Body {
-    /// Create an empty `Body` stream.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use hyper::{Body, Request};
-    ///
-    /// // create a `GET /` request
-    /// let get = Request::new(Body::empty());
-    /// ```
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     #[inline]
     pub fn empty() -> Body {
         loop {}
     }
-    /// Wrap a futures `Stream` in a box inside `Body`.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use hyper::Body;
-    /// let chunks: Vec<Result<_, std::io::Error>> = vec![
-    ///     Ok("hello"),
-    ///     Ok(" "),
-    ///     Ok("world"),
-    /// ];
-    ///
-    /// let stream = futures_util::stream::iter(chunks);
-    ///
-    /// let body = Body::wrap_stream(stream);
-    /// ```
-    ///
-    /// # Optional
-    ///
-    /// This function requires enabling the `stream` feature in your
-    /// `Cargo.toml`.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     #[cfg(feature = "stream")]
     #[cfg_attr(docsrs, doc(cfg(feature = "stream")))]
     pub fn wrap_stream<S, O, E>(stream: S) -> Body
@@ -153,7 +153,7 @@ impl Body {
     }
 }
 impl Default for Body {
-    /// Returns `Body::empty()`.
+    
     #[inline]
     fn default() -> Body {
         loop {}
@@ -188,10 +188,10 @@ impl fmt::Debug for Body {
         loop {}
     }
 }
-/// # Optional
-///
-/// This function requires enabling the `stream` feature in your
-/// `Cargo.toml`.
+
+
+
+
 #[cfg(feature = "stream")]
 impl Stream for Body {
     type Item = crate::Result<Bytes>;
@@ -202,10 +202,10 @@ impl Stream for Body {
         loop {}
     }
 }
-/// # Optional
-///
-/// This function requires enabling the `stream` feature in your
-/// `Cargo.toml`.
+
+
+
+
 #[cfg(feature = "stream")]
 impl From<Box<dyn Stream<Item = Result<Bytes, Box<dyn StdError + Send + Sync>>> + Send>>
 for Body {

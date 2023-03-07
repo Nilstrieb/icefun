@@ -25,22 +25,22 @@ use tokio_util::io::poll_read_buf;
 use crate::filter::{Filter, FilterClone, One};
 use crate::reject::{self, Rejection};
 use crate::reply::{Reply, Response};
-/// Creates a `Filter` that serves a File at the `path`.
-///
-/// Does not filter out based on any information of the request. Always serves
-/// the file at the exact `path` provided. Thus, this can be used to serve a
-/// single file with `GET`s, but could also be used in combination with other
-/// filters, such as after validating in `POST` request, wanting to return a
-/// specific file as the body.
-///
-/// For serving a directory, see [dir](dir).
-///
-/// # Example
-///
-/// ```
-/// // Always serves this file from the file system.
-/// let route = warp::fs::file("/www/static/app.js");
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn file(
     path: impl Into<PathBuf>,
 ) -> impl FilterClone<Extract = One<File>, Error = Rejection> {
@@ -53,28 +53,28 @@ pub fn file(
         .and(conditionals())
         .and_then(file_reply)
 }
-/// Creates a `Filter` that serves a directory at the base `path` joined
-/// by the request path.
-///
-/// This can be used to serve "static files" from a directory. By far the most
-/// common pattern of serving static files is for `GET` requests, so this
-/// filter automatically includes a `GET` check.
-///
-/// # Example
-///
-/// ```
-/// use warp::Filter;
-///
-/// // Matches requests that start with `/static`,
-/// // and then uses the rest of that path to lookup
-/// // and serve a file from `/www/static`.
-/// let route = warp::path("static")
-///     .and(warp::fs::dir("/www/static"));
-///
-/// // For example:
-/// // - `GET /static/app.js` would serve the file `/www/static/app.js`
-/// // - `GET /static/css/app.css` would serve the file `/www/static/css/app.css`
-/// ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 pub fn dir(
     path: impl Into<PathBuf>,
 ) -> impl FilterClone<Extract = One<File>, Error = Rejection> {
@@ -140,32 +140,32 @@ fn conditionals() -> impl Filter<
             range,
         })
 }
-/// A file response.
+
 #[derive(Debug)]
 pub struct File {
     resp: Response,
     path: ArcPath,
 }
 impl File {
-    /// Extract the `&Path` of the file this `Response` delivers.
-    ///
-    /// # Example
-    ///
-    /// The example below changes the Content-Type response header for every file called `video.mp4`.
-    ///
-    /// ```
-    /// use warp::{Filter, reply::Reply};
-    ///
-    /// let route = warp::path("static")
-    ///     .and(warp::fs::dir("/www/static"))
-    ///     .map(|reply: warp::filters::fs::File| {
-    ///         if reply.path().ends_with("video.mp4") {
-    ///             warp::reply::with_header(reply, "Content-Type", "video/mp4").into_response()
-    ///         } else {
-    ///             reply.into_response()
-    ///         }
-    ///     });
-    /// ```
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     pub fn path(&self) -> &Path {
         loop {}
     }
