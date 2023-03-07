@@ -30,7 +30,7 @@ where
 pub trait MakeServiceRef<Target, ReqBody> {
     type ResBody;
     type Error;
-    type Service: HttpService<ReqBody, ResBody = Self::ResBody, Error = Self::Error>;
+    type Service: HttpService<ReqBody>;
 }
 
 impl<T, Target, E, ME, S, F, IB, OB> MakeServiceRef<Target, IB> for T

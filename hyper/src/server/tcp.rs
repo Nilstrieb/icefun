@@ -63,12 +63,6 @@ impl AddrIncoming {
 impl Accept for AddrIncoming {
     type Conn = AddrStream;
     type Error = io::Error;
-    fn poll_accept(
-        mut self: Pin<&mut Self>,
-        cx: &mut task::Context<'_>,
-    ) -> Poll<Option<Result<Self::Conn, Self::Error>>> {
-        loop {}
-    }
 }
 impl fmt::Debug for AddrIncoming {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

@@ -18,11 +18,6 @@ pub trait Accept {
     type Conn;
 
     type Error;
-
-    fn poll_accept(
-        self: Pin<&mut Self>,
-        cx: &mut task::Context<'_>,
-    ) -> Poll<Option<Result<Self::Conn, Self::Error>>>;
 }
 
 #[cfg(feature = "stream")]
@@ -39,12 +34,6 @@ where
     {
         type Conn = IO;
         type Error = E;
-        fn poll_accept(
-            self: Pin<&mut Self>,
-            cx: &mut task::Context<'_>,
-        ) -> Poll<Option<Result<Self::Conn, Self::Error>>> {
-            loop {}
-        }
     }
     FromStream { stream }
 }
