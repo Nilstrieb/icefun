@@ -16,7 +16,7 @@ pub trait ConnStreamExec<F, B>: Clone {
     fn execute_h2stream(&mut self);
 }
 #[cfg(all(feature = "server", any(feature = "http1", feature = "http2")))]
-pub trait NewSvcExec<I, S, E, W: Watcher<I, S, E>>: Clone {
+pub trait NewSvcExec<I, S, E, W: Watcher<I, S>>: Clone {
     fn execute_new_svc(&mut self, fut: NewSvcTask<I, S, E, W>);
 }
 
@@ -46,7 +46,7 @@ where
 impl<I, S, E, W> NewSvcExec<I, S, E, W> for Exec
 where
     NewSvcTask<I, S, E, W>: Future<Output = ()> + Send + 'static,
-    W: Watcher<I, S, E>,
+    W: Watcher<I, S>,
 {
     fn execute_new_svc(&mut self, fut: NewSvcTask<I, S, E, W>) {
         loop {}

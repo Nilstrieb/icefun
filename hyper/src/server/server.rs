@@ -64,12 +64,12 @@ impl<I, E> Builder<I, E> {
         loop {}
     }
 }
-pub trait Watcher<I, S, E> {
+pub trait Watcher<I, S> {
     type Future;
 }
 
 pub(crate) struct NoopWatcher;
-impl<I, S, E> Watcher<I, S, E> for NoopWatcher
+impl<I, S> Watcher<I, S> for NoopWatcher
 where
     S: HttpService<Body>,
 {
@@ -83,11 +83,11 @@ pub(crate) mod new_svc {
     use crate::common::{task, Future, Pin, Poll};
     use crate::service::HttpService;
 
-    pub struct NewSvcTask<I, S, E, W: Watcher<I, S, E>> {
+    pub struct NewSvcTask<I, S, E, W: Watcher<I, S>> {
         state: State<I, S, E, W>,
     }
 
-    pub(super) struct State<I, S, E, W: Watcher<I, S, E>> {
+    pub(super) struct State<I, S, E, W: Watcher<I, S>> {
         a: (I, S, E),
         future: W::Future,
     }
@@ -96,7 +96,7 @@ pub(crate) mod new_svc {
     where
         S: HttpService<Body, ResBody = B>,
         E: ConnStreamExec<S::Future, B>,
-        W: Watcher<I, S, E>,
+        W: Watcher<I, S>,
     {
         type Output = ();
         fn poll(self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<Self::Output> {
