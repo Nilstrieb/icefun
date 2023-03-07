@@ -200,45 +200,10 @@ where
     /// // Spawn the server into a runtime
     /// tokio::task::spawn(server);
     ///
-    /// // Later, start the shutdown...
-    /// let _ = tx.send(());
-    /// # }
-    /// ```
-    pub fn bind_with_graceful_shutdown(
-        self,
-        addr: impl Into<SocketAddr> + 'static,
-        signal: impl Future<Output = ()> + Send + 'static,
-    ) -> (SocketAddr, impl Future<Output = ()> + 'static) {
-        let (addr, srv) = bind!(self, addr);
-        let fut = srv
-            .with_graceful_shutdown(signal)
-            .map(|result| {
-                if let Err(err) = result {
-                    tracing::error!("server error: {}", err)
-                }
-            });
-        (addr, fut)
-    }
     /// Create a server with graceful shutdown signal.
     ///
     /// When the signal completes, the server will start the graceful shutdown
-    /// process.
-    pub fn try_bind_with_graceful_shutdown(
-        self,
-        addr: impl Into<SocketAddr> + 'static,
-        signal: impl Future<Output = ()> + Send + 'static,
-    ) -> Result<(SocketAddr, impl Future<Output = ()> + 'static), crate::Error> {
-        let addr = addr.into();
-        let (addr, srv) = try_bind!(self, & addr).map_err(crate::Error::new)?;
-        let srv = srv
-            .with_graceful_shutdown(signal)
-            .map(|result| {
-                if let Err(err) = result {
-                    tracing::error!("server error: {}", err)
-                }
-            });
-        Ok((addr, srv))
-    }
+
     /// Setup this `Server` with a specific stream of incoming connections.
     ///
     /// This can be used for Unix Domain Sockets, or TLS, etc.
@@ -282,7 +247,6 @@ where
                 )
                 .http1_pipeline_flush(pipeline)
                 .serve(service)
-                .with_graceful_shutdown(signal)
                 .await;
             if let Err(err) = srv {
                 tracing::error!("server error: {}", err);

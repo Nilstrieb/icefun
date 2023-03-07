@@ -11,7 +11,6 @@ use crate::common::exec::Exec;
 use crate::common::exec::{ConnStreamExec, NewSvcExec};
 use crate::common::{task, Future, Pin, Poll, Unpin};
 use super::conn::{Http as Http_, UpgradeableConnection};
-use super::shutdown::{Graceful, GracefulWatcher};
 use crate::service::{HttpService, MakeServiceRef};
 use self::new_svc::NewSvcTask;
 pin_project! {
@@ -108,13 +107,7 @@ where
     /// let _ = tx.send(());
     /// # }
     /// ```
-    pub fn with_graceful_shutdown<F>(self, signal: F) -> Graceful<I, S, F, E>
-    where
-        F: Future<Output = ()>,
-        E: NewSvcExec<IO, S::Future, S::Service, E, GracefulWatcher>,
-    {
-        loop {}
-    }
+
     fn poll_next_(
         self: Pin<&mut Self>,
         cx: &mut task::Context<'_>,
@@ -154,15 +147,7 @@ impl<I, E> Builder<I, E> {
     pub fn http1_pipeline_flush(mut self, val: bool) -> Self {
         loop {}
     }
-    /// Set a timeout for reading client request headers. If a client does not
-    /// transmit the entire header within this time, the connection is closed.
-    ///
-    /// Default is None.
-    #[cfg(all(feature = "http1", feature = "runtime"))]
-    #[cfg_attr(docsrs, doc(cfg(all(feature = "http1", feature = "runtime"))))]
-    pub(crate) fn http1_header_read_timeout(mut self, read_timeout: Duration) -> Self {
-        loop {}
-    }
+
     ///
     pub fn serve<S, B>(self, _: S) -> Server<I, S>
     where
@@ -181,13 +166,9 @@ pub trait Watcher<I, S, E>: Clone {
 pub(crate) struct NoopWatcher;
 impl<I, S, E> Watcher<I, S, E> for NoopWatcher
 where
-    I: AsyncRead + AsyncWrite + Unpin + Send + 'static,
     S: HttpService<Body>,
-    E: ConnStreamExec<S::Future, S::ResBody>,
-    S::ResBody: 'static,
-    <S::ResBody as HttpBody>::Error: Into<Box<dyn StdError + Send + Sync>>,
 {
-    type Future = UpgradeableConnection<I, S, E>;
+    type Future = ();
     fn watch(&self) -> Self::Future {
         loop {}
     }
@@ -204,7 +185,7 @@ pub(crate) mod new_svc {
     pin_project! {
         #[allow(missing_debug_implementations)] 
         
-        pub struct NewSvcTask < I, N, S : HttpService < Body >, E, W : Watcher < I, S, E >> {
+        pub struct NewSvcTask < I, N, S, E, W : Watcher < I, S, E >> {
             
             #[pin] 
             state : State <I, S, E, W >,
@@ -216,7 +197,7 @@ pub(crate) mod new_svc {
     pin_project! {
         #[project = StateProj]
         
-        pub (super) enum State <I, S : HttpService < Body >, E, W : Watcher < I, S, E >> {
+        pub (super) enum State <I, S, E, W : Watcher < I, S, E >> {
             
             Connecting { a: (I, S, W, E), },
         
