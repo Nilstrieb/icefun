@@ -48,10 +48,7 @@ where
     S::ResBody: 'static,
     <S::ResBody as HttpBody>::Error: Into<Box<dyn StdError + Send + Sync>>,
 {
-    type Future = Watching<
-        UpgradeableConnection<I, S, E>,
-        fn(Pin<&mut UpgradeableConnection<I, S, E>>),
-    >;
+    type Future = ();
     fn watch(&self) -> Self::Future {
         loop {}
     }

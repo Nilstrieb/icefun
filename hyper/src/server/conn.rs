@@ -76,18 +76,6 @@ pub use super::tcp::{AddrIncoming, AddrStream};
 #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
 pub(crate) struct Http<E = Exec> {
     pub(crate) exec: E,
-    h1_half_close: bool,
-    h1_keep_alive: bool,
-    h1_title_case_headers: bool,
-    h1_preserve_header_case: bool,
-    #[cfg(all(feature = "http1", feature = "runtime"))]
-    h1_header_read_timeout: Option<Duration>,
-    h1_writev: Option<bool>,
-    #[cfg(feature = "http2")]
-    h2_builder: proto::h2::server::Config,
-    mode: ConnectionMode,
-    max_buf_size: Option<usize>,
-    pipeline_flush: bool,
 }
 /// The internal mode of HTTP protocol which indicates the behavior when a parse error occurs.
 #[cfg(any(feature = "http1", feature = "http2"))]
