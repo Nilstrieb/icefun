@@ -53,10 +53,8 @@ use std::marker::PhantomData;
 use std::time::Duration;
 #[cfg(feature = "http2")]
 use crate::common::io::Rewind;
-#[cfg(all(feature = "http1", feature = "http2"))]
-use crate::error::{Kind, Parse};
-#[cfg(feature = "http1")]
-use crate::upgrade::Upgraded;
+
+
 cfg_feature! {
     #![any(feature = "http1", feature = "http2")] use std::error::Error as StdError; use
     std::fmt; use bytes::Bytes; use pin_project_lite::pin_project; use tokio::io:: {

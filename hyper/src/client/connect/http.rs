@@ -8,13 +8,13 @@ use std::pin::Pin;
 use std::sync::Arc;
 use std::task::{self, Poll};
 use std::time::Duration;
-use futures_util::future::Either;
-use http::uri::{Scheme, Uri};
+
+use http::uri::{Uri};
 use pin_project_lite::pin_project;
 use tokio::net::{TcpSocket, TcpStream};
 use tokio::time::Sleep;
-use tracing::{debug, trace, warn};
-use super::dns::{self, resolve, GaiResolver, Resolve};
+use tracing::{warn};
+use super::dns::{self, GaiResolver, Resolve};
 use super::{Connected, Connection};
 /// A connector for the `http` scheme.
 ///

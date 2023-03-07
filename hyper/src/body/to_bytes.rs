@@ -1,4 +1,4 @@
-use bytes::{Buf, BufMut, Bytes};
+use bytes::{Bytes};
 use super::HttpBody;
 /// Concatenate the buffers from a body into a single `Bytes` asynchronously.
 ///

@@ -1,12 +1,12 @@
 use std::error::Error as StdError;
 use pin_project_lite::pin_project;
 use tokio::io::{AsyncRead, AsyncWrite};
-use tracing::debug;
+
 use super::accept::Accept;
 use super::conn::UpgradeableConnection;
 use super::server::{Server, Watcher};
 use crate::body::{Body, HttpBody};
-use crate::common::drain::{self, Draining, Signal, Watch, Watching};
+use crate::common::drain::{Draining, Signal, Watch, Watching};
 use crate::common::exec::{ConnStreamExec, NewSvcExec};
 use crate::common::{task, Future, Pin, Poll, Unpin};
 use crate::service::{HttpService, MakeServiceRef};

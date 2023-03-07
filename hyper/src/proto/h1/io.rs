@@ -1,20 +1,20 @@
-use std::cmp;
+
 use std::fmt;
 #[cfg(all(feature = "server", feature = "runtime"))]
 use std::future::Future;
 use std::io::{self, IoSlice};
 use std::marker::Unpin;
-use std::mem::MaybeUninit;
+
 #[cfg(all(feature = "server", feature = "runtime"))]
 use std::time::Duration;
-use bytes::{Buf, BufMut, Bytes, BytesMut};
-use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
+use bytes::{Buf, Bytes, BytesMut};
+use tokio::io::{AsyncRead, AsyncWrite};
 #[cfg(all(feature = "server", feature = "runtime"))]
 use tokio::time::Instant;
-use tracing::{debug, trace};
+
 use super::{Http1Transaction, ParseContext, ParsedMessage};
 use crate::common::buf::BufList;
-use crate::common::{task, Pin, Poll};
+use crate::common::{task, Poll};
 /// The initial buffer size allocated before trying to read from IO.
 pub(crate) const INIT_BUFFER_SIZE: usize = 8192;
 /// The minimum value that can be set to max buffer size.

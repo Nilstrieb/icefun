@@ -5,7 +5,7 @@
 //! - The value `0` is reserved for closed.
 use futures_util::task::AtomicWaker;
 use std::sync::{
-    atomic::{AtomicUsize, Ordering},
+    atomic::{AtomicUsize},
     Arc,
 };
 use std::task;

@@ -46,8 +46,7 @@ use std::marker::Unpin;
 use bytes::Bytes;
 use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
 use tokio::sync::oneshot;
-#[cfg(any(feature = "http1", feature = "http2"))]
-use tracing::trace;
+
 use crate::common::io::Rewind;
 use crate::common::{task, Future, Pin, Poll};
 /// An upgraded HTTP connection.

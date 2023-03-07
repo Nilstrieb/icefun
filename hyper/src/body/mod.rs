@@ -25,13 +25,6 @@ mod aggregate;
 mod body;
 mod length;
 mod to_bytes;
-/// An optimization to try to take a full body if immediately available.
-///
-/// This is currently limited to *only* `hyper::Body`s.
-#[cfg(feature = "http1")]
-pub(crate) fn take_full_data<T: HttpBody + 'static>(body: &mut T) -> Option<T::Data> {
-    loop {}
-}
 fn _assert_send_sync() {
     loop {}
 }

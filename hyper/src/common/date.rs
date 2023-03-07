@@ -1,10 +1,10 @@
 use std::cell::RefCell;
-use std::fmt::{self, Write};
+use std::fmt::{self};
 use std::str;
-use std::time::{Duration, SystemTime};
+use std::time::{SystemTime};
 #[cfg(feature = "http2")]
 use http::header::HeaderValue;
-use httpdate::HttpDate;
+
 pub(crate) const DATE_VALUE_LENGTH: usize = 29;
 #[cfg(feature = "http1")]
 pub(crate) fn extend(dst: &mut Vec<u8>) {

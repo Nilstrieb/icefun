@@ -5,8 +5,8 @@ use std::time::Duration;
 use socket2::TcpKeepalive;
 use tokio::net::TcpListener;
 use tokio::time::Sleep;
-use tracing::{debug, error, trace};
-use crate::common::{task, Future, Pin, Poll};
+
+use crate::common::{task, Pin, Poll};
 #[allow(unreachable_pub)]
 pub use self::addr_stream::AddrStream;
 use super::accept::Accept;

@@ -4,18 +4,18 @@ use std::marker::PhantomData;
 #[cfg(all(feature = "server", feature = "runtime"))]
 use std::time::Duration;
 use bytes::{Buf, Bytes};
-use http::header::{HeaderValue, CONNECTION};
+
 use http::{HeaderMap, Method, Version};
 use httparse::ParserConfig;
 use tokio::io::{AsyncRead, AsyncWrite};
 #[cfg(all(feature = "server", feature = "runtime"))]
 use tokio::time::Sleep;
-use tracing::{debug, error, trace};
+
 use super::io::Buffered;
-use super::{Decoder, Encode, EncodedBuf, Encoder, Http1Transaction, ParseContext, Wants};
+use super::{Decoder, EncodedBuf, Encoder, Http1Transaction, Wants};
 use crate::body::DecodedLength;
-use crate::common::{task, Pin, Poll, Unpin};
-use crate::headers::connection_keep_alive;
+use crate::common::{task, Poll, Unpin};
+
 use crate::proto::{BodyLength, MessageHead};
 const H2_PREFACE: &[u8] = b"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n";
 /// This handles a connection, which will have been established over an

@@ -2,12 +2,12 @@ use std::error::Error as StdError;
 use bytes::{Buf, Bytes};
 use http::Request;
 use tokio::io::{AsyncRead, AsyncWrite};
-use tracing::{debug, trace};
-use super::{Http1Transaction, Wants};
-use crate::body::{Body, DecodedLength, HttpBody};
+use tracing::{trace};
+use super::{Http1Transaction};
+use crate::body::{Body, HttpBody};
 use crate::common::{task, Future, Pin, Poll, Unpin};
-use crate::proto::{BodyLength, Conn, Dispatched, MessageHead, RequestHead};
-use crate::upgrade::OnUpgrade;
+use crate::proto::{Conn, Dispatched, MessageHead, RequestHead};
+
 pub(crate) struct Dispatcher<D, Bs: HttpBody, I, T> {
     conn: Conn<I, Bs::Data, T>,
     dispatch: D,

@@ -6,7 +6,7 @@ use std::net::{SocketAddr, TcpListener as StdTcpListener};
 use std::time::Duration;
 use pin_project_lite::pin_project;
 use tokio::io::{AsyncRead, AsyncWrite};
-use tracing::trace;
+
 use super::accept::Accept;
 #[cfg(all(feature = "tcp"))]
 use super::tcp::AddrIncoming;
@@ -467,7 +467,7 @@ where
 pub(crate) mod new_svc {
     use std::error::Error as StdError;
     use tokio::io::{AsyncRead, AsyncWrite};
-    use tracing::debug;
+    
     use super::{Connecting, Watcher};
     use crate::body::{Body, HttpBody};
     use crate::common::exec::ConnStreamExec;

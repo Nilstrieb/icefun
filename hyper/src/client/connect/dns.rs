@@ -24,7 +24,7 @@
 use std::error::Error;
 use std::future::Future;
 use std::net::{
-    Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6, ToSocketAddrs,
+    Ipv4Addr, Ipv6Addr, SocketAddr,
 };
 use std::pin::Pin;
 use std::str::FromStr;
@@ -32,7 +32,7 @@ use std::task::{self, Poll};
 use std::{fmt, io, vec};
 use tokio::task::JoinHandle;
 use tower_service::Service;
-use tracing::debug;
+
 pub(super) use self::sealed::Resolve;
 /// A domain name to resolve into IP addresses.
 #[derive(Clone, Hash, Eq, PartialEq)]

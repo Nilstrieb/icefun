@@ -1,17 +1,17 @@
 use std::error::Error as StdError;
 use std::fmt;
-use std::mem;
+
 use std::time::Duration;
-use futures_channel::oneshot;
+
 use futures_util::future::{self, Either, FutureExt as _, TryFutureExt as _};
-use http::header::{HeaderValue, HOST};
+
 use http::uri::{Port, Scheme};
-use http::{Method, Request, Response, Uri, Version};
-use tracing::{debug, trace, warn};
+use http::{Request, Response, Uri, Version};
+use tracing::{debug, trace};
 use super::conn;
 use super::connect::{self, sealed::Connect, Alpn, Connected, Connection};
 use super::pool::{
-    self, CheckoutIsClosedError, Key as PoolKey, Pool, Poolable, Pooled, Reservation,
+    self, Key as PoolKey, Pool, Poolable, Pooled, Reservation,
 };
 #[cfg(feature = "tcp")]
 use super::HttpConnector;

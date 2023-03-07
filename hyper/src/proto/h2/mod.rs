@@ -1,14 +1,14 @@
 use bytes::{Buf, Bytes};
-use h2::{Reason, RecvStream, SendStream};
-use http::header::{HeaderName, CONNECTION, TE, TRAILER, TRANSFER_ENCODING, UPGRADE};
+use h2::{RecvStream, SendStream};
+
 use http::HeaderMap;
 use pin_project_lite::pin_project;
 use std::error::Error as StdError;
 use std::io::{self, Cursor, IoSlice};
-use std::mem;
+
 use std::task::Context;
 use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
-use tracing::{debug, trace, warn};
+
 use crate::body::HttpBody;
 use crate::common::{task, Future, Pin, Poll};
 use crate::proto::h2::ping::Recorder;

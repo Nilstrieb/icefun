@@ -29,10 +29,10 @@ use std::task::{self, Poll};
 use std::time::Duration;
 #[cfg(not(feature = "runtime"))]
 use std::time::Instant;
-use h2::{Ping, PingPong};
+use h2::{PingPong};
 #[cfg(feature = "runtime")]
 use tokio::time::{Instant, Sleep};
-use tracing::{debug, trace};
+
 type WindowSize = u32;
 pub(super) fn disabled() -> Recorder {
     loop {}

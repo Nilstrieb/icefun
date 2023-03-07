@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 use std::io::IoSlice;
-use bytes::{Buf, BufMut, Bytes, BytesMut};
+use bytes::{Buf, Bytes};
 pub(crate) struct BufList<T> {
     bufs: VecDeque<T>,
 }

@@ -6,14 +6,13 @@ use bytes::Bytes;
 use futures_channel::mpsc;
 use futures_channel::oneshot;
 use futures_core::Stream;
-#[cfg(feature = "stream")]
-use futures_util::TryStreamExt;
+
 use http::HeaderMap;
 use http_body::{Body as HttpBody, SizeHint};
 use super::DecodedLength;
 #[cfg(feature = "stream")]
 use crate::common::sync_wrapper::SyncWrapper;
-use crate::common::Future;
+
 #[cfg(all(feature = "client", any(feature = "http1", feature = "http2")))]
 use crate::common::Never;
 use crate::common::{task, watch, Pin, Poll};

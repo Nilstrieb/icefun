@@ -4,7 +4,7 @@
 use std::error::Error as StdError;
 use std::future::Future;
 use std::marker::PhantomData;
-use tracing::debug;
+
 use super::conn::{Builder, SendRequest};
 use crate::{
     body::HttpBody, common::{task, Pin, Poll},

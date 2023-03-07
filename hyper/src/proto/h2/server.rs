@@ -2,24 +2,24 @@ use std::error::Error as StdError;
 use std::marker::Unpin;
 #[cfg(feature = "runtime")]
 use std::time::Duration;
-use bytes::Bytes;
+
 use h2::server::{Connection, Handshake, SendResponse};
-use h2::{Reason, RecvStream};
-use http::{Method, Request};
+use h2::{RecvStream};
+
 use pin_project_lite::pin_project;
 use tokio::io::{AsyncRead, AsyncWrite};
-use tracing::{debug, trace, warn};
+
 use super::{ping, PipeToSendStream, SendBuf};
 use crate::body::HttpBody;
 use crate::common::exec::ConnStreamExec;
-use crate::common::{date, task, Future, Pin, Poll};
-use crate::ext::Protocol;
-use crate::headers;
+use crate::common::{task, Future, Pin, Poll};
+
+
 use crate::proto::h2::ping::Recorder;
-use crate::proto::h2::{H2Upgraded, UpgradedSendStream};
+
 use crate::proto::Dispatched;
 use crate::service::HttpService;
-use crate::upgrade::{OnUpgrade, Pending, Upgraded};
+use crate::upgrade::{Pending};
 use crate::{Body, Response};
 const DEFAULT_CONN_WINDOW: u32 = 1024 * 1024;
 const DEFAULT_STREAM_WINDOW: u32 = 1024 * 1024;

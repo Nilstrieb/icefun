@@ -32,23 +32,7 @@ use bytes::Bytes;
 /// its contents will be written in place of the canonical reason phrase when responding via HTTP/1.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(crate) struct ReasonPhrase(Bytes);
-impl ReasonPhrase {
-    /// Gets the reason phrase as bytes.
-    pub(crate) fn as_bytes(&self) -> &[u8] {
-        loop {}
-    }
-    /// Converts a static byte slice to a reason phrase.
-    pub(crate) fn from_static(reason: &'static [u8]) -> Self {
-        loop {}
-    }
-    /// Converts a `Bytes` directly into a `ReasonPhrase` without validating.
-    ///
-    /// Use with care; invalid bytes in a reason phrase can cause serious security problems if
-    /// emitted in a response.
-    pub(crate) unsafe fn from_bytes_unchecked(reason: Bytes) -> Self {
-        loop {}
-    }
-}
+impl ReasonPhrase {}
 impl TryFrom<&[u8]> for ReasonPhrase {
     type Error = InvalidReasonPhrase;
     fn try_from(reason: &[u8]) -> Result<Self, Self::Error> {
@@ -98,12 +82,6 @@ impl std::fmt::Display for InvalidReasonPhrase {
     }
 }
 impl std::error::Error for InvalidReasonPhrase {}
-const fn is_valid_byte(b: u8) -> bool {
-    loop {}
-}
-const fn find_invalid_byte(bytes: &[u8]) -> Option<u8> {
-    loop {}
-}
 #[cfg(test)]
 mod tests {
     use super::*;

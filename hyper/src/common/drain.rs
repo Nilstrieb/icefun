@@ -1,4 +1,4 @@
-use std::mem;
+
 use pin_project_lite::pin_project;
 use tokio::sync::watch;
 use super::{task, Future, Pin, Poll};

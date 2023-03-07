@@ -1,24 +1,22 @@
-use std::fmt::{self, Write};
+use std::fmt::{self};
 use std::mem::MaybeUninit;
-use bytes::Bytes;
+
 use bytes::BytesMut;
-#[cfg(feature = "server")]
-use http::header::ValueIter;
-use http::header::{self, Entry, HeaderName, HeaderValue};
-use http::{HeaderMap, Method, StatusCode, Version};
+
+use http::header::{HeaderName};
+use http::{HeaderMap, Method, StatusCode};
 #[cfg(all(feature = "server", feature = "runtime"))]
 use tokio::time::Instant;
-use tracing::{debug, error, trace, trace_span, warn};
+
 use crate::body::DecodedLength;
-#[cfg(feature = "server")]
-use crate::common::date;
+
 use crate::error::Parse;
 use crate::ext::HeaderCaseMap;
 #[cfg(feature = "ffi")]
 use crate::ext::OriginalHeaderOrder;
-use crate::headers;
+
 use crate::proto::h1::{
-    Encode, Encoder, Http1Transaction, ParseContext, ParseResult, ParsedMessage,
+    Encode, Encoder, Http1Transaction, ParseContext, ParseResult,
 };
 use crate::proto::{BodyLength, MessageHead, RequestHead, RequestLine};
 const MAX_HEADERS: usize = 100;

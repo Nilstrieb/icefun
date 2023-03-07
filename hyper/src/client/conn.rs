@@ -57,7 +57,7 @@ use std::error::Error as StdError;
 use std::fmt;
 #[cfg(not(all(feature = "http1", feature = "http2")))]
 use std::marker::PhantomData;
-use std::sync::Arc;
+
 #[cfg(all(feature = "runtime", feature = "http2"))]
 use std::time::Duration;
 use bytes::Bytes;
@@ -77,8 +77,7 @@ use crate::common::{
 };
 use crate::proto;
 use crate::rt::Executor;
-#[cfg(feature = "http1")]
-use crate::upgrade::Upgraded;
+
 use crate::{Body, Request, Response};
 #[cfg(feature = "http1")]
 type Http1Dispatcher<T, B> = proto::dispatch::Dispatcher<

@@ -1,6 +1,6 @@
 use std::marker::Unpin;
-use std::{cmp, io};
-use bytes::{Buf, Bytes};
+use std::{io};
+use bytes::{Bytes};
 use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
 use crate::common::{task, Pin, Poll};
 /// Combine a buffer with an IO, rewinding reads to use the buffer.

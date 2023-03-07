@@ -1,24 +1,24 @@
 use std::error::Error as StdError;
 #[cfg(feature = "runtime")]
 use std::time::Duration;
-use bytes::Bytes;
+
 use futures_channel::{mpsc, oneshot};
-use futures_util::future::{self, Either, FutureExt as _, TryFutureExt as _};
-use futures_util::stream::StreamExt as _;
+
+
 use h2::client::{Builder, SendRequest};
 use h2::SendStream;
-use http::{Method, StatusCode};
+
 use tokio::io::{AsyncRead, AsyncWrite};
-use tracing::{debug, trace, warn};
-use super::{ping, H2Upgraded, PipeToSendStream, SendBuf};
+
+use super::{ping, SendBuf};
 use crate::body::HttpBody;
 use crate::client::dispatch::Callback;
 use crate::common::{exec::Exec, task, Future, Never, Pin, Poll};
-use crate::ext::Protocol;
-use crate::headers;
-use crate::proto::h2::UpgradedSendStream;
+
+
+
 use crate::proto::Dispatched;
-use crate::upgrade::Upgraded;
+
 use crate::{Body, Request, Response};
 use h2::client::ResponseFuture;
 type ClientRx<B> = crate::client::dispatch::Receiver<Request<B>, Response<Body>>;
