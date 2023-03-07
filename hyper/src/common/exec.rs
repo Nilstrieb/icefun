@@ -18,8 +18,8 @@ pub trait ConnStreamExec<F, B: HttpBody>: Clone {
     fn execute_h2stream(&mut self, fut: H2Stream<F, B>);
 }
 #[cfg(all(feature = "server", any(feature = "http1", feature = "http2")))]
-pub trait NewSvcExec<I, N, S, E, W: Watcher<I, S, E>>: Clone {
-    fn execute_new_svc(&mut self, fut: NewSvcTask<I, N, S, E, W>);
+pub trait NewSvcExec<I, S, E, W: Watcher<I, S, E>>: Clone {
+    fn execute_new_svc(&mut self, fut: NewSvcTask<I, S, E, W>);
 }
 pub(crate) type BoxSendFuture = Pin<Box<dyn Future<Output = ()> + Send>>;
 #[derive(Clone)]
@@ -43,13 +43,13 @@ where
     }
 }
 #[cfg(all(feature = "server", any(feature = "http1", feature = "http2")))]
-impl<I, N, S, E, W> NewSvcExec<I, N, S, E, W> for Exec
+impl<I, S, E, W> NewSvcExec<I, S, E, W> for Exec
 where
-    NewSvcTask<I, N, S, E, W>: Future<Output = ()> + Send + 'static,
+    NewSvcTask<I, S, E, W>: Future<Output = ()> + Send + 'static,
     S: HttpService<Body>,
     W: Watcher<I, S, E>,
 {
-    fn execute_new_svc(&mut self, fut: NewSvcTask<I, N, S, E, W>) {
+    fn execute_new_svc(&mut self, fut: NewSvcTask<I, S, E, W>) {
         loop {}
     }
 }
@@ -65,14 +65,14 @@ where
     }
 }
 #[cfg(all(feature = "server", any(feature = "http1", feature = "http2")))]
-impl<I, N, S, E, W> NewSvcExec<I, N, S, E, W> for E
+impl<I, S, E, W> NewSvcExec<I, S, E, W> for E
 where
-    E: Executor<NewSvcTask<I, N, S, E, W>> + Clone,
-    NewSvcTask<I, N, S, E, W>: Future<Output = ()>,
+    E: Executor<NewSvcTask<I, S, E, W>> + Clone,
+    NewSvcTask<I, S, E, W>: Future<Output = ()>,
     S: HttpService<Body>,
     W: Watcher<I, S, E>,
 {
-    fn execute_new_svc(&mut self, fut: NewSvcTask<I, N, S, E, W>) {
+    fn execute_new_svc(&mut self, fut: NewSvcTask<I, S, E, W>) {
         loop {}
     }
 }

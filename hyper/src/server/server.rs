@@ -46,7 +46,7 @@ where
     I: Accept<Conn = IO, Error = IE>,
     IE: Into<Box<dyn StdError + Send + Sync>>,
     S: MakeServiceRef<IO, Body>,
-    E: NewSvcExec<IO, S::Future, S::Service, E, NoopWatcher>,
+    E: NewSvcExec<IO, S::Service, E, NoopWatcher>,
 {
     type Output = ();
     fn poll(mut self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<Self::Output> {
@@ -102,9 +102,8 @@ pub(crate) mod new_svc {
     use std::error::Error as StdError;
     use tokio::io::{AsyncRead, AsyncWrite};
 
-    pub struct NewSvcTask<I, N, S, E, W: Watcher<I, S, E>> {
+    pub struct NewSvcTask<I, S, E, W: Watcher<I, S, E>> {
         state: State<I, S, E, W>,
-        a: N,
     }
 
     pub(super) enum State<I, S, E, W: Watcher<I, S, E>> {
@@ -113,16 +112,14 @@ pub(crate) mod new_svc {
         Connected { future: W::Future },
     }
 
-    impl<I, N, S: HttpService<Body>, E, W: Watcher<I, S, E>> NewSvcTask<I, N, S, E, W> {
+    impl<I, S: HttpService<Body>, E, W: Watcher<I, S, E>> NewSvcTask<I, S, E, W> {
         pub(super) fn new(watcher: W) -> Self {
             loop {}
         }
     }
-    impl<I, N, S, NE, B, E, W> Future for NewSvcTask<I, N, S, E, W>
+    impl<I, S, B, E, W> Future for NewSvcTask<I, S, E, W>
     where
         I: AsyncRead + AsyncWrite + Unpin + Send + 'static,
-        N: Future<Output = Result<S, NE>>,
-        NE: Into<Box<dyn StdError + Send + Sync>>,
         S: HttpService<Body, ResBody = B>,
         B: HttpBody + 'static,
         B::Error: Into<Box<dyn StdError + Send + Sync>>,
