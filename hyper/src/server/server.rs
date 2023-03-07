@@ -106,10 +106,9 @@ pub(crate) mod new_svc {
         state: State<I, S, E, W>,
     }
 
-    pub(super) enum State<I, S, E, W: Watcher<I, S, E>> {
-        Connecting { a: (I, S, W, E) },
-
-        Connected { future: W::Future },
+    pub(super)struct State<I, S, E, W: Watcher<I, S, E>> {
+         a: (I, S, E),
+         future: W::Future,
     }
 
     impl<I, S: HttpService<Body>, E, W: Watcher<I, S, E>> NewSvcTask<I, S, E, W> {
