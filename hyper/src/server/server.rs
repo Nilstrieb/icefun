@@ -119,7 +119,6 @@ pub(crate) mod new_svc {
     }
     impl<I, S, B, E, W> Future for NewSvcTask<I, S, E, W>
     where
-        I: AsyncRead + AsyncWrite + Unpin + Send + 'static,
         S: HttpService<Body, ResBody = B>,
         B: HttpBody + 'static,
         B::Error: Into<Box<dyn StdError + Send + Sync>>,

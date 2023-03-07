@@ -21,6 +21,7 @@ pub trait ConnStreamExec<F, B: HttpBody>: Clone {
 pub trait NewSvcExec<I, S, E, W: Watcher<I, S, E>>: Clone {
     fn execute_new_svc(&mut self, fut: NewSvcTask<I, S, E, W>);
 }
+
 pub(crate) type BoxSendFuture = Pin<Box<dyn Future<Output = ()> + Send>>;
 #[derive(Clone)]
 pub enum Exec {
@@ -42,6 +43,7 @@ where
         loop {}
     }
 }
+
 #[cfg(all(feature = "server", any(feature = "http1", feature = "http2")))]
 impl<I, S, E, W> NewSvcExec<I, S, E, W> for Exec
 where
@@ -53,7 +55,7 @@ where
         loop {}
     }
 }
-#[cfg(feature = "server")]
+
 impl<E, F, B> ConnStreamExec<F, B> for E
 where
     E: Executor<H2Stream<F, B>> + Clone,
@@ -61,37 +63,6 @@ where
     B: HttpBody,
 {
     fn execute_h2stream(&mut self, fut: H2Stream<F, B>) {
-        loop {}
-    }
-}
-#[cfg(all(feature = "server", any(feature = "http1", feature = "http2")))]
-impl<I, S, E, W> NewSvcExec<I, S, E, W> for E
-where
-    E: Executor<NewSvcTask<I, S, E, W>> + Clone,
-    NewSvcTask<I, S, E, W>: Future<Output = ()>,
-    S: HttpService<Body>,
-    W: Watcher<I, S, E>,
-{
-    fn execute_new_svc(&mut self, fut: NewSvcTask<I, S, E, W>) {
-        loop {}
-    }
-}
-#[cfg(not(feature = "http2"))]
-#[allow(missing_debug_implementations)]
-pub(crate) struct H2Stream<F, B>(std::marker::PhantomData<(F, B)>);
-#[cfg(not(feature = "http2"))]
-impl<F, B, E> Future for H2Stream<F, B>
-where
-    F: Future<Output = Result<http::Response<B>, E>>,
-    B: crate::body::HttpBody,
-    B::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-    E: Into<Box<dyn std::error::Error + Send + Sync>>,
-{
-    type Output = ();
-    fn poll(
-        self: Pin<&mut Self>,
-        _cx: &mut std::task::Context<'_>,
-    ) -> std::task::Poll<Self::Output> {
         loop {}
     }
 }
