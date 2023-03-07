@@ -6,7 +6,6 @@ use std::net::{SocketAddr, TcpListener as StdTcpListener};
 use std::time::Duration;
 use pin_project_lite::pin_project;
 use tokio::io::{AsyncRead, AsyncWrite};
-
 use super::accept::Accept;
 #[cfg(all(feature = "tcp"))]
 use super::tcp::AddrIncoming;
@@ -65,17 +64,6 @@ impl Server<AddrIncoming, ()> {
     pub(crate) fn from_tcp(
         listener: StdTcpListener,
     ) -> Result<Builder<AddrIncoming>, crate::Error> {
-        loop {}
-    }
-}
-#[cfg(feature = "tcp")]
-#[cfg_attr(
-    docsrs,
-    doc(cfg(all(feature = "tcp", any(feature = "http1", feature = "http2"))))
-)]
-impl<S, E> Server<AddrIncoming, S, E> {
-    /// Returns the local address that this server is bound to.
-    pub(crate) fn local_addr(&self) -> SocketAddr {
         loop {}
     }
 }
@@ -175,11 +163,6 @@ where
                 loop {}
             }
         }
-    }
-}
-impl<I: fmt::Debug, S: fmt::Debug> fmt::Debug for Server<I, S> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        loop {}
     }
 }
 #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
@@ -400,50 +383,6 @@ impl<I, E> Builder<I, E> {
         loop {}
     }
 }
-#[cfg(feature = "tcp")]
-#[cfg_attr(
-    docsrs,
-    doc(cfg(all(feature = "tcp", any(feature = "http1", feature = "http2"))))
-)]
-impl<E> Builder<AddrIncoming, E> {
-    /// Set the duration to remain idle before sending TCP keepalive probes.
-    ///
-    /// If `None` is specified, keepalive is disabled.
-    pub(crate) fn tcp_keepalive(mut self, keepalive: Option<Duration>) -> Self {
-        loop {}
-    }
-    /// Set the duration between two successive TCP keepalive retransmissions,
-    /// if acknowledgement to the previous keepalive transmission is not received.
-    pub(crate) fn tcp_keepalive_interval(mut self, interval: Option<Duration>) -> Self {
-        loop {}
-    }
-    /// Set the number of retransmissions to be carried out before declaring that remote end is not available.
-    pub(crate) fn tcp_keepalive_retries(mut self, retries: Option<u32>) -> Self {
-        loop {}
-    }
-    /// Set the value of `TCP_NODELAY` option for accepted connections.
-    pub(crate) fn tcp_nodelay(mut self, enabled: bool) -> Self {
-        loop {}
-    }
-    /// Set whether to sleep on accept errors.
-    ///
-    /// A possible scenario is that the process has hit the max open files
-    /// allowed, and so trying to accept a new connection will fail with
-    /// EMFILE. In some cases, it's preferable to just wait for some time, if
-    /// the application will likely close some files (or connections), and try
-    /// to accept the connection again. If this option is true, the error will
-    /// be logged at the error level, since it is still a big deal, and then
-    /// the listener will sleep for 1 second.
-    ///
-    /// In other cases, hitting the max open files should be treat similarly
-    /// to being out-of-memory, and simply error (and shutdown). Setting this
-    /// option to false will allow that.
-    ///
-    /// For more details see [`AddrIncoming::set_sleep_on_errors`]
-    pub(crate) fn tcp_sleep_on_accept_errors(mut self, val: bool) -> Self {
-        loop {}
-    }
-}
 pub trait Watcher<I, S: HttpService<Body>, E>: Clone {
     type Future: Future<Output = crate::Result<()>>;
     fn watch(&self, conn: UpgradeableConnection<I, S, E>) -> Self::Future;
@@ -467,7 +406,6 @@ where
 pub(crate) mod new_svc {
     use std::error::Error as StdError;
     use tokio::io::{AsyncRead, AsyncWrite};
-    
     use super::{Connecting, Watcher};
     use crate::body::{Body, HttpBody};
     use crate::common::exec::ConnStreamExec;
@@ -513,18 +451,4 @@ pin_project! {
     #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))] pub struct
     Connecting < I, F, E = Exec > { #[pin] future : F, io : Option < I >, protocol :
     Http_ < E >, }
-}
-impl<I, F, S, FE, E, B> Future for Connecting<I, F, E>
-where
-    I: AsyncRead + AsyncWrite + Unpin,
-    F: Future<Output = Result<S, FE>>,
-    S: HttpService<Body, ResBody = B>,
-    B: HttpBody + 'static,
-    B::Error: Into<Box<dyn StdError + Send + Sync>>,
-    E: ConnStreamExec<S::Future, B>,
-{
-    type Output = Result<Connection<I, S, E>, FE>;
-    fn poll(self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<Self::Output> {
-        loop {}
-    }
 }

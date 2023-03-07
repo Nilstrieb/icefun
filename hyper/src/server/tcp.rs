@@ -5,7 +5,6 @@ use std::time::Duration;
 use socket2::TcpKeepalive;
 use tokio::net::TcpListener;
 use tokio::time::Sleep;
-
 use crate::common::{task, Pin, Poll};
 #[allow(unreachable_pub)]
 pub use self::addr_stream::AddrStream;
@@ -292,51 +291,5 @@ mod addr_stream {
         fn as_raw_fd(&self) -> RawFd {
             loop {}
         }
-    }
-}
-#[cfg(test)]
-mod tests {
-    use std::time::Duration;
-    use crate::server::tcp::TcpKeepaliveConfig;
-    #[test]
-    fn no_tcp_keepalive_config() {
-        loop {}
-    }
-    #[test]
-    fn tcp_keepalive_time_config() {
-        loop {}
-    }
-    #[cfg(
-        any(
-            target_os = "android",
-            target_os = "dragonfly",
-            target_os = "freebsd",
-            target_os = "fuchsia",
-            target_os = "illumos",
-            target_os = "linux",
-            target_os = "netbsd",
-            target_vendor = "apple",
-            windows,
-        )
-    )]
-    #[test]
-    fn tcp_keepalive_interval_config() {
-        loop {}
-    }
-    #[cfg(
-        any(
-            target_os = "android",
-            target_os = "dragonfly",
-            target_os = "freebsd",
-            target_os = "fuchsia",
-            target_os = "illumos",
-            target_os = "linux",
-            target_os = "netbsd",
-            target_vendor = "apple",
-        )
-    )]
-    #[test]
-    fn tcp_keepalive_retries_config() {
-        loop {}
     }
 }

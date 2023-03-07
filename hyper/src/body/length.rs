@@ -7,8 +7,6 @@ impl From<Option<u64>> for DecodedLength {
         loop {}
     }
 }
-#[cfg(any(feature = "http1", feature = "http2", test))]
-const MAX_LEN: u64 = std::u64::MAX - 2;
 impl DecodedLength {
     pub(crate) const CLOSE_DELIMITED: DecodedLength = DecodedLength(::std::u64::MAX);
     pub(crate) const CHUNKED: DecodedLength = DecodedLength(::std::u64::MAX - 1);
@@ -55,18 +53,6 @@ impl fmt::Debug for DecodedLength {
 }
 impl fmt::Display for DecodedLength {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        loop {}
-    }
-}
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn sub_if_known() {
-        loop {}
-    }
-    #[test]
-    fn sub_if_chunked() {
         loop {}
     }
 }

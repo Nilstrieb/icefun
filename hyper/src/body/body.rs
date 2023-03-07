@@ -101,8 +101,6 @@ pub struct Sender {
     data_tx: BodySender,
     trailers_tx: Option<TrailersSender>,
 }
-const WANT_PENDING: usize = 1;
-const WANT_READY: usize = 2;
 impl Body {
     /// Create an empty `Body` stream.
     ///
@@ -265,48 +263,6 @@ impl From<Cow<'static, str>> for Body {
 impl Sender {}
 impl fmt::Debug for Sender {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        loop {}
-    }
-}
-#[cfg(test)]
-mod tests {
-    use std::mem;
-    use std::task::Poll;
-    use super::{Body, DecodedLength, HttpBody, Sender, SizeHint};
-    #[test]
-    fn test_size_of() {
-        loop {}
-    }
-    #[test]
-    fn size_hint() {
-        loop {}
-    }
-    #[tokio::test]
-    async fn channel_abort() {
-        loop {}
-    }
-    #[tokio::test]
-    async fn channel_abort_when_buffer_is_full() {
-        loop {}
-    }
-    #[test]
-    fn channel_buffers_one() {
-        loop {}
-    }
-    #[tokio::test]
-    async fn channel_empty() {
-        loop {}
-    }
-    #[test]
-    fn channel_ready() {
-        loop {}
-    }
-    #[test]
-    fn channel_wanter() {
-        loop {}
-    }
-    #[test]
-    fn channel_notices_closure() {
         loop {}
     }
 }
