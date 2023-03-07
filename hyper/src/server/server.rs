@@ -64,11 +64,10 @@ impl<I, E> Builder<I, E> {
         loop {}
     }
 }
-pub trait Watcher<I, S, E>: Clone {
+pub trait Watcher<I, S, E> {
     type Future;
 }
-#[allow(missing_debug_implementations)]
-#[derive(Copy, Clone)]
+
 pub(crate) struct NoopWatcher;
 impl<I, S, E> Watcher<I, S, E> for NoopWatcher
 where
@@ -76,6 +75,7 @@ where
 {
     type Future = ();
 }
+
 pub(crate) mod new_svc {
     use super::Watcher;
     use crate::body::Body;
@@ -92,11 +92,6 @@ pub(crate) mod new_svc {
         future: W::Future,
     }
 
-    impl<I, S: HttpService<Body>, E, W: Watcher<I, S, E>> NewSvcTask<I, S, E, W> {
-        pub(super) fn new(_: W) -> Self {
-            loop {}
-        }
-    }
     impl<I, S, B, E, W> Future for NewSvcTask<I, S, E, W>
     where
         S: HttpService<Body, ResBody = B>,
@@ -109,17 +104,8 @@ pub(crate) mod new_svc {
         }
     }
 }
-pin_project! {
-    #[doc = " A future building a new `Service` to a `Connection`."] #[doc = ""] #[doc =
-    " Wraps the future returned from `MakeService` into one that returns"] #[doc =
-    " a `Connection`."] #[must_use = "futures do nothing unless polled"] #[derive(Debug)]
-    #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
 
-    pub struct Connecting < F, E = Exec > {
-
-        #[pin] future : F,
-        protocol :
-        Http_ < E >,
-
-    }
+pub struct Connecting<F, E = Exec> {
+    future: F,
+    protocol: Http_<E>,
 }
